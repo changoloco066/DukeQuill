@@ -1,4 +1,4 @@
-package main.java.com.dukequill.gui;
+package com.dukequill.gui;
 
 public class gui {
     

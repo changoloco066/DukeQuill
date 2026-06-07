@@ -36,26 +36,47 @@ public class Lexer {
         int i = 0;
 
         while(i < line.length()){
+
             char c = line.charAt(i);
+            int start = i;
 
             //if para espacios
             if(Character.isWhitespace(c)){
                 addToken(String.valueOf(c), TokenType.SPACES, i, lineNumber);
                 i++; 
                 continue;
-
             }
 
              //if para los 3 puntos suspensivos
-             if(c == '.' && i + 2 < line.length() && line.charAt(i + 1) == '.' && line.charAt(i + 2) == '.'){
+            if(c == '.' && i + 2 < line.length() && line.charAt(i + 1) == '.' && line.charAt(i + 2) == '.'){
                 addToken("...", TokenType.SINGLE_PUNCTUATION_SIGN, i , lineNumber);
                 i +=3;
+                continue;
             }           
+
+            //if para numeros decimales y enteros 
+            if (Character.isDigit(c)) {
+                StringBuilder sb = new StringBuilder();
+                boolean hasDot = false;
+                while (i < line.length()) {
+                    char cur = line.charAt(i);
+                    if (Character.isDigit(cur)) {
+                        sb.append(cur);
+                    } else if (cur == '.' && !hasDot) {
+                        sb.append(cur);
+                        hasDot = true;
+                    } else {
+                        break;
+                    }
+                    i++;
+                }
+                addToken(sb.toString(), TokenType.NUMBER, start, lineNumber);
+                continue;
+            }
             //validar con if cada caso especial 
 
             //if para saltos de linea 
             
-            //if para numeros decimales y enteros 
 
             //un if por cada token
 

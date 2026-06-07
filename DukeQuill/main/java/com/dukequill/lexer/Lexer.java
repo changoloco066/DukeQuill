@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Lexer {
 
-    private List<Tokens> tokens;
+    private List<Token> tokens;
 
     private static final Set<Character> SINGLE_PUNCTUATION_SIGN = Set.of('.', ',', ';', ':', '…');
     private static final Set<Character> AUX_SIGN = Set.of('/', '-');
@@ -19,7 +19,7 @@ public class Lexer {
         tokens = new ArrayList<>();
     }
 
-    public List<Tokens> analyze(String input) {
+    public List<Token> analyze(String input) {
         tokens.clear();
         String[] lines = input.split("\n");
        
@@ -138,7 +138,7 @@ public class Lexer {
     }
 
     private void addToken(String lexeme, TokenType type, int pos, int line ){
-        tokens.add(new Tokens(lexeme, type, pos, line));
+        tokens.add(new Token(lexeme, type, pos, line));
     }
 
 }

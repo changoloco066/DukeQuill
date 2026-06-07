@@ -1,12 +1,12 @@
 package com.dukequill.lexer;
 
-public class Tokens {
+public class Token {
       private String lexeme;
     private TokenType type;
     private int position;
     private int line;
 
-    public Tokens(String lexeme, TokenType type, int position, int line) {
+    public Token(String lexeme, TokenType type, int position, int line) {
         this.lexeme = lexeme;
         this.type = type;
         this.position = position;

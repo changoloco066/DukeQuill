@@ -6,7 +6,7 @@ package com.dukequill.lexer;
 public enum TokenType {
     WORD, 
     NUMBER,
-    
+
     //DIACRITIC_SIGN,  la tilde y diéresis nunca aparecen solas en el texto, siempre van dentro de una letra
 
     SINGLE_PUNCTUATION_SIGN,

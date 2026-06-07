@@ -1,5 +1,6 @@
 package com.dukequill.lexer;
 
+import java.lang.foreign.AddressLayout;
 import java.util.*;
 
 public class Lexer {
@@ -73,13 +74,65 @@ public class Lexer {
                 addToken(sb.toString(), TokenType.NUMBER, start, lineNumber);
                 continue;
             }
-            //validar con if cada caso especial 
-
-            //if para saltos de linea 
-            
 
             //un if por cada token
 
+            if(SINGLE_PUNCTUATION_SIGN.contains(c)){
+                addToken(String.valueOf(c), TokenType.SINGLE_PUNCTUATION_SIGN, start, lineNumber);
+                i ++;
+                continue;
+            }
+
+            if(AUX_SIGN.contains(c)){
+                addToken(String.valueOf(c), TokenType.AUX_SIGN, start, lineNumber);
+                i ++;
+                continue;
+            }
+
+            if(OPEN_PUNCTUATION_SIGN.contains(c)){
+                addToken(String.valueOf(c), TokenType.OPEN_PUNCTUATION_SIGN, start, lineNumber);
+                i ++; 
+                continue;
+            }
+
+            if(OPEN_AUX_SIGN.contains(c)){
+                addToken(String.valueOf(c), TokenType.OPEN_AUX_SIGN, start, lineNumber);
+                i ++;
+                continue;
+            }
+
+            if(CLOSE_PUNCTUATION_SIGN.contains(c)){
+                addToken(String.valueOf(c), TokenType.CLOSE_PUNCTUATION_SIGN, start, lineNumber);
+                i ++;
+                continue;
+            }
+
+            if(CLOSE_AUX_SIGN.contains(c)){
+                addToken(String.valueOf(c), TokenType.CLOSE_AUX_SIGN, start, lineNumber);
+                i ++;
+                continue;
+            }
+
+            if(Character.isLetter(c)){
+                StringBuilder sb = new StringBuilder();
+                while(i < line.length()){
+                    char cur = line.charAt(i);
+                    if(Character.isLetter(cur)){
+                        sb.append(cur);
+                    }else {
+                        break;
+                    }
+                    i ++;
+                }
+                addToken(sb.toString(), TokenType.WORD, start, lineNumber);
+                continue;
+            }
+
+            // desconocido
+                addToken(String.valueOf(c), TokenType.UNKNOWN, start, lineNumber);
+                i ++;
+                continue;
+        
         }
 
     }

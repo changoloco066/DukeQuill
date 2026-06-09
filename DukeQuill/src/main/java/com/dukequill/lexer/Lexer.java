@@ -3,6 +3,8 @@ package com.dukequill.lexer;
 import java.lang.foreign.AddressLayout;
 import java.util.*;
 
+@SuppressWarnings("unused")
+
 public class Lexer {
 
     private List<Token> tokens;

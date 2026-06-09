@@ -1,5 +1,5 @@
 {
     "java.project.sourcePaths": [
-        "DukeQuill/main/java"
+        "DukeQuill/src/main/java"
     ]
 }

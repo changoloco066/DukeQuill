@@ -3,10 +3,10 @@ package com.dukequill.analyzer;
 import com.dukequill.lexer.Token;
 import com.dukequill.lexer.TokenType;
 
-public class SpellError {
+public class SpellErrors {
     private final Token token;
  
-    public SpellError(Token token) {
+    public SpellErrors(Token token) {
        this.token = token;
     }
  

@@ -20,13 +20,11 @@ public class SpellChecker {
 
         for(Token token : tokens){
             if(token.getType() == TokenType.WORD){
-                if(!dictionary.contains(token.getLexeme())){
+                if(!dictionary.contains(token.getLexeme()) && !dictionary.contains(token.getLexeme().toLowerCase())){
                     errors.add(new SpellErrors(token));
                 }
             }
         }
         return errors;
     }
-
-
 }

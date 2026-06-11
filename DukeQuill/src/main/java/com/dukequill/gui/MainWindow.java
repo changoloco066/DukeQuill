@@ -22,12 +22,15 @@ public class MainWindow extends JFrame {
     private JScrollPane scrollPane;
     private JTabbedPane tabs;
     private DefaultTableModel errorModel;
+
+    private Dictionary dictionary;
+    private SpellChecker checker;
+
     private List<Token> tokens;
     private Set<String> words;
     private List<SpellErrors> errors;
     private Lexer lexer;
-    private Dictionary dictionary;
-    private SpellChecker checker;
+   
 
     public MainWindow(){
         setTitle("DukeQuill");
@@ -65,5 +68,38 @@ public class MainWindow extends JFrame {
         dictionary = new Dictionary();
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary);
+
+        analyzeBtn.addActionListener(e -> analyzeText());
+    }
+
+     private void analyzeText(){
+        String input = inputArea.getText();
+        
+        Lexer lexer = new Lexer();
+        List<Token> tokens = lexer.analyze(input);
+
+        SpellChecker checker = new checker(token);
+        SpellChecker.checker();
+        List<SpellErrors> errors = checker.getErrors();
+
+        tokens = tokens;
+        errors = errors;
+
+        loadTokens(tokens);
+        loadErrors(errors);
+
+        if(!errors.isEmpty()){
+            JOptionPane.showMessageDialog(this, errors.size() + "Error(es) ortograficos encontrados", "Error", JOptionPane.ERROR_MESSAGE);
+            tabs.setSelectedIndex(1);
+        }
+    }
+
+    private void LoadErrors(List<SpellErrors> errors){
+        errorModel.setRowCount(0);
+        for(SpellErrors e : errors){
+            errorModel.addRow(new Objet[]{ e.getLine(), e.getPosition(), e.getMessage()
+                
+            });
+        }
     }
 }

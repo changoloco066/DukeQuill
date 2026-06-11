@@ -98,7 +98,7 @@ public class MainWindow extends JFrame {
         errorModel.setRowCount(0);
         for(SpellErrors e : errors){
             errorModel.addRow(new Objet[]{ e.getLine(), e.getPosition(), e.getMessage()
-                
+
             });
         }
     }

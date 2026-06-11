@@ -27,7 +27,7 @@ public class MainWindow extends JFrame {
     private SpellChecker checker;
 
     private List<Token> tokens;
-    private Set<String> words;
+    //private Set<String> words;
     private List<SpellErrors> errors;
     private Lexer lexer;
    
@@ -50,7 +50,7 @@ public class MainWindow extends JFrame {
         errorTable = new JTable(errorModel);
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
 
-        String[] symbolCols = {"Name", "Type", "Value", "Line"};
+        //String[] symbolCols = {"Name", "Type", "Value", "Line"};
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, inputScroll, tabs);
         splitPane.setDividerLocation(180);
@@ -75,17 +75,10 @@ public class MainWindow extends JFrame {
      private void analyzeText(){
         String input = inputArea.getText();
         
-        Lexer lexer = new Lexer();
         List<Token> tokens = lexer.analyze(input);
-
-        SpellChecker checker = new checker(token);
-        SpellChecker.checker();
-        List<SpellErrors> errors = checker.getErrors();
-
-        tokens = tokens;
-        errors = errors;
-
-        loadTokens(tokens);
+        List<SpellErrors> errors = checker.check(tokens);        
+   
+        //loadTokens(tokens);
         loadErrors(errors);
 
         if(!errors.isEmpty()){
@@ -94,12 +87,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void LoadErrors(List<SpellErrors> errors){
+    private void loadErrors(List<SpellErrors> errors){
         errorModel.setRowCount(0);
         for(SpellErrors e : errors){
-            errorModel.addRow(new Objet[]{ e.getLine(), e.getPosition(), e.getMessage()
-
-            });
+         errorModel.addRow(new Object[]{ e.getLine(), e.getPosition(), e.getLexeme() });
         }
     }
 }

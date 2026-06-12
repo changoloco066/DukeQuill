@@ -1,6 +1,5 @@
 package com.dukequill.lexer;
 
-import java.lang.foreign.AddressLayout;
 import java.util.*;
 
 @SuppressWarnings("unused")

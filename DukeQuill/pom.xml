@@ -17,9 +17,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.carrot2</groupId>
-            <artifactId>morfologik-stemming</artifactId>
-            <version>2.1.9</version>
+            <groupId>org.languagetool</groupId>
+            <artifactId>language-es</artifactId>
+            <version>6.3</version>
         </dependency>
     </dependencies>
+
 </project>

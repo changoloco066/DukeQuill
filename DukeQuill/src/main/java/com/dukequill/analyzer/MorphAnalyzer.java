@@ -18,10 +18,11 @@ public class MorphAnalyzer {
     public MorphAnalyzer() throws Exception{
         tagger = new Spanish().createDefaultTagger();
     }
-
-    public boolean isValidWord(String word) throws Exception{
+    public boolean isValidWord(String word) throws Exception {
         List<?> tags = tagger.tag(List.of(word));
-        return !tags.isEmpty();
+        if(tags.isEmpty()) return false;
+        String tagStr = tags.get(0).toString();
+        return !tagStr.contains("/null");
     }
 }
 

@@ -32,13 +32,14 @@ public class MainWindow extends JFrame {
     private Lexer lexer;
    
 
-    public MainWindow(){
+    public MainWindow() throws Exception{
         setTitle("DukeQuill");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         inputArea = new JTextArea();
+        inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
         //inputArea.setText(buildSampleCode());
         JScrollPane inputScroll = new JScrollPane(inputArea);
         inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aqui tu texto"));
@@ -69,21 +70,28 @@ public class MainWindow extends JFrame {
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary);
 
-        analyzeBtn.addActionListener(e -> analyzeText());
+     analyzeBtn.addActionListener(e -> {
+        try {
+            analyzeText();
+        } catch (Exception e1) {
+                e1.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
-     private void analyzeText(){
+     private void analyzeText() throws Exception{
         String input = inputArea.getText();
-        
+
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
-   
+        
         //loadTokens(tokens);
         loadErrors(errors);
 
         if(!errors.isEmpty()){
             JOptionPane.showMessageDialog(this, errors.size() + "Error(es) ortograficos encontrados", "Error", JOptionPane.ERROR_MESSAGE);
-            tabs.setSelectedIndex(1);
+            tabs.setSelectedIndex(0);
         }
     }
 

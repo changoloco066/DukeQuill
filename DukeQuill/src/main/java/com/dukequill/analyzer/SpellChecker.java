@@ -19,7 +19,7 @@ public class SpellChecker {
     }
 
     public List<SpellErrors> check(List<Token> tokens) throws Exception{
-
+        errors.clear();
         for(Token token : tokens){
             if(token.getType() == TokenType.WORD){
                 if(!dictionary.contains(token.getLexeme()) && !dictionary.contains(token.getLexeme().toLowerCase())){

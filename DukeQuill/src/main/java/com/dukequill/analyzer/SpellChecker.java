@@ -18,17 +18,17 @@ public class SpellChecker {
 
     }
 
-    public List<SpellErrors> check(List<Token> tokens){
+    public List<SpellErrors> check(List<Token> tokens) throws Exception{
 
         for(Token token : tokens){
             if(token.getType() == TokenType.WORD){
                 if(!dictionary.contains(token.getLexeme()) && !dictionary.contains(token.getLexeme().toLowerCase())){
-                    errors.add(new SpellErrors(token));
+                    if(!morphAnalyzer.isValidWord(token.getLexeme())){
+                        errors.add(new SpellErrors(token));
+                    }
                 }
             }
         }
         return errors;
     }
-    
-    
 }

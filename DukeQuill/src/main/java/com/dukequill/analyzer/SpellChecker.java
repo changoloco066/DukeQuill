@@ -9,19 +9,23 @@ import com.dukequill.lexer.*;
 public class SpellChecker {
     private final Dictionary dictionary;
     private final List<SpellErrors> errors;
+    private final MorphAnalyzer morphAnalyzer;
 
-    public SpellChecker(Dictionary dictionary){
+    public SpellChecker(Dictionary dictionary) throws Exception{
         this.dictionary = dictionary;
         this.errors = new ArrayList<>();
+        this.morphAnalyzer = new MorphAnalyzer();
 
     }
 
-    public List<SpellErrors> check(List<Token> tokens){
-
+    public List<SpellErrors> check(List<Token> tokens) throws Exception{
+        errors.clear();
         for(Token token : tokens){
             if(token.getType() == TokenType.WORD){
                 if(!dictionary.contains(token.getLexeme()) && !dictionary.contains(token.getLexeme().toLowerCase())){
-                    errors.add(new SpellErrors(token));
+                    if(!morphAnalyzer.isValidWord(token.getLexeme())){
+                        errors.add(new SpellErrors(token));
+                    }
                 }
             }
         }

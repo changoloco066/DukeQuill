@@ -9,10 +9,12 @@ import com.dukequill.lexer.*;
 public class SpellChecker {
     private final Dictionary dictionary;
     private final List<SpellErrors> errors;
+    private final MorphAnalyzer morphAnalyzer;
 
-    public SpellChecker(Dictionary dictionary){
+    public SpellChecker(Dictionary dictionary) throws Exception{
         this.dictionary = dictionary;
         this.errors = new ArrayList<>();
+        this.morphAnalyzer = new MorphAnalyzer();
 
     }
 
@@ -27,4 +29,6 @@ public class SpellChecker {
         }
         return errors;
     }
+    
+    
 }

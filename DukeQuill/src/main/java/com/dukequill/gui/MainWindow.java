@@ -46,7 +46,7 @@ public class MainWindow extends JFrame {
 
         tabs = new JTabbedPane();
         
-        String[] errorCols = {"Line", "Position", "Error", "Context"};
+        String[] errorCols = {"Linea", "Posicion", "Error", "Contexto"};
         errorModel = new DefaultTableModel(errorCols, 0);
         errorTable = new JTable(errorModel);
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
@@ -58,8 +58,8 @@ public class MainWindow extends JFrame {
         splitPane.setResizeWeight(0.3);
         add(splitPane, BorderLayout.CENTER);
 
-        JButton analyzeBtn = new JButton("Analyze");
-        JButton exportBtn = new JButton("Export Results");
+        JButton analyzeBtn = new JButton("Analizar texto");
+        JButton exportBtn = new JButton("Exportar resultados");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(analyzeBtn);
         buttonPanel.add(exportBtn);

@@ -42,7 +42,7 @@ public class MainWindow extends JFrame {
         inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
         //inputArea.setText(buildSampleCode());
         JScrollPane inputScroll = new JScrollPane(inputArea);
-        inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aqui tu texto"));
+        inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aquí tu texto"));
 
         tabs = new JTabbedPane();
         

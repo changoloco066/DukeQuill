@@ -1,12 +1,5 @@
 package com.dukequill.analyzer;
 
-import com.dukequill.*;
-import com.dukequill.analyzer.SpellChecker;
-import com.dukequill.analyzer.SpellErrors;
-import com.dukequill.lexer.Token;
-import com.dukequill.dictionary.Dictionary;
-import com.dukequill.lexer.Lexer;
-
 import org.languagetool.language.Spanish;
 import org.languagetool.tagging.Tagger;
 import java.util.List;

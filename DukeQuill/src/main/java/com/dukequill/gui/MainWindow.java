@@ -10,6 +10,8 @@ import com.dukequill.*;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
 import com.dukequill.lexer.Token;
+import com.dukequill.rules.RuleEngine;
+import com.dukequill.rules.RuleViolation;
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Lexer;
 
@@ -25,6 +27,7 @@ public class MainWindow extends JFrame {
 
     private Dictionary dictionary;
     private SpellChecker checker;
+    private RuleEngine ruleEngine;
 
     private List<Token> tokens;
     //private Set<String> words;
@@ -42,11 +45,11 @@ public class MainWindow extends JFrame {
         inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
         //inputArea.setText(buildSampleCode());
         JScrollPane inputScroll = new JScrollPane(inputArea);
-        inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aqui tu texto"));
+        inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aquí tu texto"));
 
         tabs = new JTabbedPane();
         
-        String[] errorCols = {"Line", "Position", "Error", "Context"};
+        String[] errorCols = {"Linea", "Posicion", "Error", "Contexto"};
         errorModel = new DefaultTableModel(errorCols, 0);
         errorTable = new JTable(errorModel);
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
@@ -58,8 +61,8 @@ public class MainWindow extends JFrame {
         splitPane.setResizeWeight(0.3);
         add(splitPane, BorderLayout.CENTER);
 
-        JButton analyzeBtn = new JButton("Analyze");
-        JButton exportBtn = new JButton("Export Results");
+        JButton analyzeBtn = new JButton("Analizar texto");
+        JButton exportBtn = new JButton("Exportar resultados");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(analyzeBtn);
         buttonPanel.add(exportBtn);
@@ -69,6 +72,7 @@ public class MainWindow extends JFrame {
         dictionary = new Dictionary();
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary);
+        ruleEngine = new RuleEngine();
 
      analyzeBtn.addActionListener(e -> {
         try {
@@ -85,6 +89,8 @@ public class MainWindow extends JFrame {
 
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
+        List<RuleViolation> violations = ruleEngine.check(tokens);
+        System.out.println("Violaciones " + violations.size());
         
         //loadTokens(tokens);
         loadErrors(errors);

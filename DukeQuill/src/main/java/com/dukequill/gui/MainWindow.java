@@ -10,6 +10,8 @@ import com.dukequill.*;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
 import com.dukequill.lexer.Token;
+import com.dukequill.rules.RuleEngine;
+import com.dukequill.rules.RuleViolation;
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Lexer;
 
@@ -25,6 +27,7 @@ public class MainWindow extends JFrame {
 
     private Dictionary dictionary;
     private SpellChecker checker;
+    private RuleEngine ruleEngine;
 
     private List<Token> tokens;
     //private Set<String> words;
@@ -69,6 +72,7 @@ public class MainWindow extends JFrame {
         dictionary = new Dictionary();
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary);
+        ruleEngine = new RuleEngine();
 
      analyzeBtn.addActionListener(e -> {
         try {
@@ -85,6 +89,8 @@ public class MainWindow extends JFrame {
 
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
+        List<RuleViolation> violations = ruleEngine.check(tokens);
+        System.out.println("Violaciones " + violations.size());
         
         //loadTokens(tokens);
         loadErrors(errors);

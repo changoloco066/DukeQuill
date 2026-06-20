@@ -29,8 +29,8 @@ public class InterrogationRule implements Rule {
                 tokenApertura = token;
             }
             if(token.getType() == TokenType.CLOSE_PUNCTUATION_SIGN && token.getLexeme().equals("?")){
-                if(esperandoCierre == false){
-                    violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '¿'", "Signos de interrogación "));
+                if(!esperandoCierre){
+                    violations.add(new RuleViolation(token, "Falta abrir con '¿'", "Signos de interrogación"));
                 
                 }
                 esperandoCierre = false;

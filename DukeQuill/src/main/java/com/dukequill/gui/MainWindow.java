@@ -25,6 +25,9 @@ public class MainWindow extends JFrame {
     private JTabbedPane tabs;
     private DefaultTableModel errorModel;
 
+    private JTable ruleTable;
+    private DefaultTableModel ruleModel;
+
     private Dictionary dictionary;
     private SpellChecker checker;
     private RuleEngine ruleEngine;
@@ -54,7 +57,10 @@ public class MainWindow extends JFrame {
         errorTable = new JTable(errorModel);
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
 
-        //String[] symbolCols = {"Name", "Type", "Value", "Line"};
+        String[] ruleCols = {"Línea", "Posición", "Regla", "Detalle"};
+        ruleModel = new DefaultTableModel(ruleCols, 0);
+        ruleTable = new JTable(ruleModel);
+        tabs.addTab("Reglas de puntuación", new JScrollPane(ruleTable));
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, inputScroll, tabs);
         splitPane.setDividerLocation(180);
@@ -90,9 +96,8 @@ public class MainWindow extends JFrame {
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
         List<RuleViolation> violations = ruleEngine.check(tokens);
-        System.out.println("Violaciones " + violations.size());
-        
-        //loadTokens(tokens);
+
+        loadViolations(violations);
         loadErrors(errors);
 
         if(!errors.isEmpty()){
@@ -100,6 +105,13 @@ public class MainWindow extends JFrame {
             tabs.setSelectedIndex(0);
         }
     }
+
+    private void loadViolations(List<RuleViolation> violations){
+    ruleModel.setRowCount(0);
+    for(RuleViolation v : violations){
+        ruleModel.addRow(new Object[]{ v.getLine(), v.getPosition(), v.getRuleName(), v.getMessage() });
+    }
+}
 
     private void loadErrors(List<SpellErrors> errors){
         errorModel.setRowCount(0);

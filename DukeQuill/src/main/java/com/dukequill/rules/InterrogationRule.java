@@ -15,7 +15,6 @@ public class InterrogationRule implements Rule {
     @Override
     public List<RuleViolation> check(List<Token> tokens) {
         List<RuleViolation> violations = new ArrayList<>();
-        // lógica aquí
 
         boolean esperandoCierre = false;
         Token tokenApertura = null;
@@ -23,14 +22,14 @@ public class InterrogationRule implements Rule {
         for(Token token : tokens){
             if(token.getType() == TokenType.OPEN_PUNCTUATION_SIGN && token.getLexeme().equals("¿")){
                 if(esperandoCierre){
-                    violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '?'"));
+                    violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '?'", "Signos de interrogación "));
                 }
                 esperandoCierre = true;
                 tokenApertura = token;
             }
             if(token.getType() == TokenType.CLOSE_PUNCTUATION_SIGN && token.getLexeme().equals("?")){
-                if(esperandoCierre == false){
-                    violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '¿'"));
+                if(!esperandoCierre){
+                    violations.add(new RuleViolation(token, "Falta abrir con '¿'", "Signos de interrogación"));
                 
                 }
                 esperandoCierre = false;
@@ -39,7 +38,7 @@ public class InterrogationRule implements Rule {
         }
 
         if(esperandoCierre){
-           violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '?'"));
+           violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '?'", "Signos de interrogación "));
             }
         return violations;
     }

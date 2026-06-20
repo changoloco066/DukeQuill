@@ -15,7 +15,6 @@ public class InterrogationRule implements Rule {
     @Override
     public List<RuleViolation> check(List<Token> tokens) {
         List<RuleViolation> violations = new ArrayList<>();
-        // lógica aquí
 
         boolean esperandoCierre = false;
         Token tokenApertura = null;

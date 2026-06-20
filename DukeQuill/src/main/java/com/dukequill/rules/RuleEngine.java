@@ -12,7 +12,7 @@ public class RuleEngine {
     public RuleEngine(){
         rules = new ArrayList<>();
         rules.add(new InterrogationRule());
-        //rules.add(new ExclamationRule());
+        rules.add(new ExclamationRule());
     }
 
     public List<RuleViolation> check(List<Token> tokens) throws Exception{

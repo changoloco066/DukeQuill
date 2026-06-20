@@ -30,10 +30,6 @@ public class RuleViolation {
         return token.getLexeme();
     }
 
-    public Token getRuleViolation(){
-        return token.getRuleViolation();
-    }
-
     public String getRuleName(){
         return ruleName;
     }

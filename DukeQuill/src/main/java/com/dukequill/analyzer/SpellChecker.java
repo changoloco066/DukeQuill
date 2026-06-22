@@ -4,7 +4,6 @@ import java.util.*;
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Token;
 import com.dukequill.lexer.TokenType;
-import com.dukequill.lexer.*;
 
 public class SpellChecker {
     private final Dictionary dictionary;

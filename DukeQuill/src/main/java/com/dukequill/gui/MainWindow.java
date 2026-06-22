@@ -1,12 +1,10 @@
 package com.dukequill.gui;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import com.dukequill.*;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
 import com.dukequill.lexer.Token;

@@ -1,4 +1,5 @@
-..
+<img width="150" height="250" alt="Wave" src="https://github.com/user-attachments/assets/db2d7283-5c2b-4d61-814f-4e1a0398b3f1" />
+
 # DukeQuill 🪶
 
 Un corrector ortográfico y gramatical para el idioma español, desarrollado en Java. Inspirado en el sistema de marcado de errores de procesadores de texto como Word, DukeQuill analiza texto en español e identifica errores ortográficos, morfológicos y de puntuación.

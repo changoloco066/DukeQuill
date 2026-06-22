@@ -1,0 +1,47 @@
+package com.dukequill.rules;
+
+import java.util.List;
+import java.util.ArrayList;
+import com.dukequill.lexer.Token;
+import com.dukequill.lexer.TokenType;
+
+
+public class ExclamationRule implements Rule{
+    
+    @Override
+    public String getRuleName(){
+        return "Signos de Exclamación"; 
+    }
+
+    @Override
+       public List<RuleViolation> check(List<Token> tokens) {
+        List<RuleViolation> violations = new ArrayList<>();
+
+        boolean esperandoCierre = false;
+        Token tokenApertura = null;
+
+        for(Token token : tokens){
+            if(token.getType() == TokenType.OPEN_PUNCTUATION_SIGN && token.getLexeme().equals("¡")){
+                if(esperandoCierre){
+                    violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '!'", "Signos de exclamación "));
+                }
+                esperandoCierre = true;
+                tokenApertura = token;
+            }
+            if(token.getType() == TokenType.CLOSE_PUNCTUATION_SIGN && token.getLexeme().equals("!")){
+                if(!esperandoCierre){
+                    violations.add(new RuleViolation(token, "Falta abrir con '¡'", "Signos de exclamación"));
+                
+                }
+                esperandoCierre = false;
+                
+            }
+        }
+
+        if(esperandoCierre){
+           violations.add(new RuleViolation(tokenApertura, "Falta cerrar el signo '!'", "Signos de exclamación "));
+            }
+        return violations;
+    }
+
+}

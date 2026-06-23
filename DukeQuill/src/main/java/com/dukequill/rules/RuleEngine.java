@@ -14,6 +14,7 @@ public class RuleEngine {
         rules.add(new InterrogationRule());
         rules.add(new ExclamationRule());
         rules.add(new SpacingRule());
+        rules.add(new UpperCaseRule());
     }
 
     public List<RuleViolation> check(List<Token> tokens) throws Exception{

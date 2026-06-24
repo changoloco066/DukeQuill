@@ -33,7 +33,7 @@ DukeQuill recibe un texto en español y lo analiza en varias capas:
   - [x] Editor de texto
   - [x] Tabla de errores ortográficos
   - [x] Tabla de violaciones de reglas de puntuación
-  - [x] - [ ] Mayúscula después de punto
+- [x] Mayúscula después de punto
 - [x] Detección de espacio antes de puntuación
 - [x] Punto al final de oración
 

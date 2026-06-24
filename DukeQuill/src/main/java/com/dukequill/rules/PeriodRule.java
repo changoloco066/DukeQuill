@@ -17,11 +17,11 @@ public class PeriodRule implements Rule{
         List<RuleViolation> violations = new ArrayList<>();
         
         for(int i = 1; i < tokens.size() - 1; i ++){
-                Token antes = tokens.get(i - 1);
+                //Token antes = tokens.get(i - 1);
                 Token actual = tokens.get(i);
                 Token despues = tokens.get(i + 1);
 
-                if(antes.getType() == TokenType.WORD && actual.getType() == TokenType.SINGLE_PUNCTUATION_SIGN && despues.getType() == TokenType.LINE_BREAK){
+                if(actual.getType() == TokenType.WORD && despues.getType() == TokenType.LINE_BREAK){
                     violations.add(new RuleViolation(actual, "Falta el punto final ' " + actual.getLexeme() + " '", "Punto Final"));
                 }
             }

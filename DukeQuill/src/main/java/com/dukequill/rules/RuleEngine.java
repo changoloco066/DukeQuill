@@ -16,6 +16,7 @@ public class RuleEngine {
         rules.add(new SpacingRule());
         rules.add(new UpperCaseRule());
         rules.add(new SpaceBeforePunctuationRule());
+        rules.add(new PeriodRule());
     }
 
     public List<RuleViolation> check(List<Token> tokens) throws Exception{

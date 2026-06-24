@@ -25,6 +25,11 @@ public class PeriodRule implements Rule{
                     violations.add(new RuleViolation(actual, "Falta el punto final ' " + actual.getLexeme() + " '", "Punto Final"));
                 }
             }
+
+            Token ultimo = tokens.get(tokens.size() - 1);
+            if(ultimo.getType() == TokenType.WORD){
+                violations.add(new RuleViolation(ultimo, "Falta el punto final '" + ultimo.getLexeme() + "'", "Punto Final"));
+        }
         return violations;
     }
 }

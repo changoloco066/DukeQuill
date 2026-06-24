@@ -21,7 +21,7 @@ public class SpacingRule implements Rule{
             Token actual = tokens.get(i);
             Token siguiente = tokens.get(i + 1);
 
-            if(actual.getType() == TokenType.SINGLE_PUNCTUATION_SIGN && siguiente.getType() != TokenType.SPACES){
+            if(actual.getType() == TokenType.SINGLE_PUNCTUATION_SIGN && siguiente.getType() != TokenType.SPACES && siguiente.getType() != TokenType.LINE_BREAK){
                 violations.add(new RuleViolation(actual, "Falta un espacio después del signo ' " + actual.getLexeme() + " '", "Espaciado"));
             }
         }

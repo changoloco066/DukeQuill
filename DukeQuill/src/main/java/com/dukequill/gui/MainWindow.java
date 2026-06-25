@@ -17,11 +17,15 @@ import java.awt.*;
 
 
 public class MainWindow extends JFrame {
-    private JTextArea inputArea;
     private JTable errorTable;
     private JScrollPane scrollPane;
     private JTabbedPane tabs;
     private DefaultTableModel errorModel;
+    private JTextPane inputArea;
+
+    private javax.swing.Timer delayTimer;
+    private javax.swing.text.Highlighter.HighlightPainter errorPainter;
+    private javax.swing.text.Highlighter.HighlightPainter rulePainter;
 
     private JTable ruleTable;
     private DefaultTableModel ruleModel;
@@ -31,7 +35,6 @@ public class MainWindow extends JFrame {
     private RuleEngine ruleEngine;
 
     private List<Token> tokens;
-    //private Set<String> words;
     private List<SpellErrors> errors;
     private Lexer lexer;
    
@@ -42,18 +45,37 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        inputArea = new JTextArea();
-        inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
-        //inputArea.setText(buildSampleCode());
-        JScrollPane inputScroll = new JScrollPane(inputArea);
-        inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aquí tu texto"));
-
         tabs = new JTabbedPane();
         
         String[] errorCols = {"Linea", "Posicion", "Error", "Contexto"};
         errorModel = new DefaultTableModel(errorCols, 0);
         errorTable = new JTable(errorModel);
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
+        
+        inputArea = new JTextPane();
+        inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
+        JScrollPane inputScroll = new JScrollPane(inputArea);
+        inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aquí tu texto"));
+        
+        errorPainter = new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
+            new java.awt.Color(255, 100, 100, 100));
+        rulePainter = new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
+            new java.awt.Color(100, 100, 255, 100));
+
+        delayTimer = new javax.swing.Timer(500, e -> {
+            try {
+                analyzeText();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        delayTimer.setRepeats(false);
+
+        inputArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { delayTimer.restart(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { delayTimer.restart(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { delayTimer.restart(); }
+        });
 
         String[] ruleCols = {"Línea", "Posición", "Regla", "Detalle"};
         ruleModel = new DefaultTableModel(ruleCols, 0);
@@ -97,6 +119,7 @@ public class MainWindow extends JFrame {
 
         loadViolations(violations);
         loadErrors(errors);
+        highlightErrors(errors, violations);
 
         if(!errors.isEmpty()){
             JOptionPane.showMessageDialog(this, errors.size() + "Error(es) ortograficos encontrados", "Error", JOptionPane.ERROR_MESSAGE);
@@ -117,4 +140,32 @@ public class MainWindow extends JFrame {
          errorModel.addRow(new Object[]{ e.getLine(), e.getPosition(), e.getLexeme() });
         }
     }
+
+    private void highlightErrors(List<SpellErrors> errors, List<RuleViolation> violations) {
+    javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
+    highlighter.removeAllHighlights();
+    
+    String text = inputArea.getText();
+    
+    for(SpellErrors e : errors) {
+        String word = e.getLexeme();
+        int index = text.indexOf(word);
+        if(index >= 0) {
+            try {
+                highlighter.addHighlight(index, index + word.length(), errorPainter);
+            } catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    for(RuleViolation v : violations) {
+        int pos = v.getPosition();
+        try {
+            highlighter.addHighlight(pos, pos + v.getLexeme().length(), rulePainter);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}
 }

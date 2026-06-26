@@ -191,6 +191,7 @@ public class MainWindow extends JFrame {
         this.color = color;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c) {
         try {

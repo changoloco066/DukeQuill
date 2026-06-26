@@ -42,6 +42,7 @@ DukeQuill recibe un texto en español y lo analiza en varias capas:
 
 ## Lo que viene
 
+- [ ] Auto corrector de palabras (usando el algortimo de Levenshtein distance)
 - [ ] Palabras confusables (`haber/a ver`, `sino/si no`, `porque/por qué`)
 - [ ] Exportar resultados a archivo `.txt`
 - [ ] Estadísticas del texto (palabras, oraciones, densidad de errores)

@@ -15,7 +15,10 @@ public class PeriodRule implements Rule{
     @Override
     public List<RuleViolation> check(List<Token> tokens) {
         List<RuleViolation> violations = new ArrayList<>();
-        
+            for(Token token : tokens){
+                System.out.printf("%-30s [%s]%n",token.getType(),token.getLexeme().replace("\n", "\\n"));
+    }
+
         for(int i = 1; i < tokens.size() - 1; i ++){
                 //Token antes = tokens.get(i - 1);
                 Token actual = tokens.get(i);

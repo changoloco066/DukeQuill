@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
@@ -40,11 +41,14 @@ public class MainWindow extends JFrame {
    
 
     public MainWindow() throws Exception{
+
+        // Ventana principal 
         setTitle("DukeQuill");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        // Pestañas y tablas de resultados (tablas posible eliminacion o desuso en version final)
         tabs = new JTabbedPane();
         
         String[] errorCols = {"Linea", "Posicion", "Error", "Contexto"};
@@ -52,16 +56,17 @@ public class MainWindow extends JFrame {
         errorTable = new JTable(errorModel);
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
         
+        // Area del texto principal
         inputArea = new JTextPane();
         inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
         JScrollPane inputScroll = new JScrollPane(inputArea);
         inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aquí tu texto"));
         
-        errorPainter = new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
-            new java.awt.Color(255, 100, 100, 100));
-        rulePainter = new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
-            new java.awt.Color(100, 100, 255, 100));
+        // Painters para el subrayado de errores
+        errorPainter = new WavyUnderlinePainter(Color.RED);
+        rulePainter = new WavyUnderlinePainter(Color.BLUE);
 
+        // Timer para analisis en tiempo real con delay para evitar crasheos
         delayTimer = new javax.swing.Timer(500, e -> {
             try {
                 analyzeText();
@@ -71,6 +76,7 @@ public class MainWindow extends JFrame {
         });
         delayTimer.setRepeats(false);
 
+        // Listener para detectar los cambios en el texto
         inputArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { delayTimer.restart(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { delayTimer.restart(); }
@@ -87,28 +93,32 @@ public class MainWindow extends JFrame {
         splitPane.setResizeWeight(0.3);
         add(splitPane, BorderLayout.CENTER);
 
-        JButton analyzeBtn = new JButton("Analizar texto");
+        // Panel de botones 
+        JButton analyzeBtn = new JButton("Analizar texto");  
         JButton exportBtn = new JButton("Exportar resultados");
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(analyzeBtn);
         buttonPanel.add(exportBtn);
         add(buttonPanel, BorderLayout.SOUTH);
 
+        // Inicializacion de la logica del corrector 
         lexer = new Lexer();
         dictionary = new Dictionary();
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary);
         ruleEngine = new RuleEngine();
 
-     analyzeBtn.addActionListener(e -> {
-        try {
-            analyzeText();
-        } catch (Exception e1) {
-                e1.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-    }
+    
+        // Accion de los botones
+        analyzeBtn.addActionListener(e -> {
+            try {
+                analyzeText();
+            } catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+        }
 
      private void analyzeText() throws Exception{
         String input = inputArea.getText();
@@ -121,10 +131,15 @@ public class MainWindow extends JFrame {
         loadErrors(errors);
         highlightErrors(errors, violations);
 
+        /*
+        // Pop up de cuando se encuentran uno o varios errores
+
         if(!errors.isEmpty()){
             JOptionPane.showMessageDialog(this, errors.size() + "Error(es) ortograficos encontrados", "Error", JOptionPane.ERROR_MESSAGE);
             tabs.setSelectedIndex(0);
-        }
+        } 
+
+        */
     }
 
     private void loadViolations(List<RuleViolation> violations){
@@ -159,12 +174,41 @@ public class MainWindow extends JFrame {
         }
     }
     
-    for(RuleViolation v : violations) {
-        int pos = v.getPosition();
+        for(RuleViolation v : violations) {
+            int pos = v.getPosition();
+            try {
+                highlighter.addHighlight(pos, pos + v.getLexeme().length(), rulePainter);
+            } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+        }
+    }
+
+    private static class WavyUnderlinePainter implements javax.swing.text.Highlighter.HighlightPainter {
+    private final Color color;
+
+    public WavyUnderlinePainter(Color color) {
+        this.color = color;
+    }
+
+    @Override
+    public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c) {
         try {
-            highlighter.addHighlight(pos, pos + v.getLexeme().length(), rulePainter);
-        } catch(Exception ex) {
-            ex.printStackTrace();
+            Rectangle r0 = c.modelToView(p0);
+            Rectangle r1 = c.modelToView(p1);
+            g.setColor(color);
+            int y = r0.y + r0.height - 2;
+            int x = r0.x;
+            int endX = r1.x;
+            int amplitude = 2;
+            int wavelength = 4;
+            while (x < endX) {
+                g.drawLine(x, y, x + wavelength / 2, y - amplitude);
+                g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
+                x += wavelength;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -13,28 +13,46 @@ public class PeriodRule implements Rule{
     }
 
     @Override
-    public List<RuleViolation> check(List<Token> tokens) {
-        List<RuleViolation> violations = new ArrayList<>();
-        
-        //Mensaje de depuracion 
-            for(Token token : tokens){
-                    System.out.printf("%-30s [%s]%n",token.getType(),token.getLexeme().replace("\n", "\\n"));
-         }
-        ///
-        for(int i = 1; i < tokens.size() - 1; i ++){
-                //Token antes = tokens.get(i - 1);
-                Token actual = tokens.get(i);
-                Token despues = tokens.get(i + 1);
+public List<RuleViolation> check(List<Token> tokens) {
+    List<RuleViolation> violations = new ArrayList<>();
 
-                if(actual.getType() == TokenType.WORD && despues.getType() == TokenType.LINE_BREAK){
-                    violations.add(new RuleViolation(actual, "Falta el punto final ' " + actual.getLexeme() + " '", "Punto Final"));
-                }
+        for(int i = 0; i < tokens.size() - 2; i++){
+            Token actual    = tokens.get(i);
+            Token siguiente = tokens.get(i + 1);
+            Token despues   = tokens.get(i + 2);
+
+            // WORD seguido de LINE_BREAK
+            if(actual.getType() == TokenType.WORD && siguiente.getType() == TokenType.LINE_BREAK){
+                violations.add(new RuleViolation(actual, "Falta el punto final '" + actual.getLexeme() + "'", "Punto Final"));
             }
 
-            Token ultimo = tokens.get(tokens.size() - 1);
-            if(ultimo.getType() == TokenType.WORD){
-                violations.add(new RuleViolation(ultimo, "Falta el punto final '" + ultimo.getLexeme() + "'", "Punto Final"));
+            // WORD seguido de SPACES seguido de LINE_BREAK
+            if(actual.getType() == TokenType.WORD && siguiente.getType() == TokenType.SPACES && despues.getType() == TokenType.LINE_BREAK){
+                violations.add(new RuleViolation(actual, "Falta el punto final '" + actual.getLexeme() + "'", "Punto Final"));
+            }
+
+            // WORD seguido de LINE_BREAK seguido de LINE_BREAK (párrafo con línea vacía)
+            if(actual.getType() == TokenType.WORD && siguiente.getType() == TokenType.LINE_BREAK && despues.getType() == TokenType.LINE_BREAK){
+                violations.add(new RuleViolation(actual,"Falta el punto final '" + actual.getLexeme() + "'", "Punto Final"));
+            }
         }
+
+        // Penúltimo token: WORD seguido de LINE_BREAK
+        if(tokens.size() >= 2){
+            Token penultimo = tokens.get(tokens.size() - 2);
+            Token ultimo    = tokens.get(tokens.size() - 1);
+
+            if(penultimo.getType() == TokenType.WORD && ultimo.getType() == TokenType.LINE_BREAK){
+                violations.add(new RuleViolation(penultimo, "Falta el punto final '" + penultimo.getLexeme() + "'", "Punto Final"));
+            }
+        }
+
+        // Último token: WORD sin nada después
+        Token ultimo = tokens.get(tokens.size() - 1);
+        if(ultimo.getType() == TokenType.WORD){
+            violations.add(new RuleViolation(ultimo, "Falta el punto final '" + ultimo.getLexeme() + "'", "Punto Final"));
+        }
+
         return violations;
     }
 }

@@ -42,10 +42,15 @@ public class Lexer {
             char c = line.charAt(i);
             int start = i;
 
-            //if para espacios
+            //if para espacios (agrupa todos los espacios consecutivos)
             if(Character.isWhitespace(c)){
-                addToken(String.valueOf(c), TokenType.SPACES, i, lineNumber);
-                i++; 
+                StringBuilder sb = new StringBuilder();
+                int start2 = i;
+                while(i < line.length() && Character.isWhitespace(line.charAt(i))){
+                    sb.append(line.charAt(i));
+                    i++;
+                }
+                addToken(sb.toString(), TokenType.SPACES, start2, lineNumber);
                 continue;
             }
 

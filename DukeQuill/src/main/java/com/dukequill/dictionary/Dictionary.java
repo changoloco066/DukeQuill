@@ -16,6 +16,10 @@ public class Dictionary {
 
     private Set<String> words = new HashSet<>();
 
+    public Set<String> getWords(){
+        return Collections.unmodifiableSet(words);
+    }
+
     public void loadDictionary() {
         boolean firstLine = true;
         try(BufferedReader br = new BufferedReader(new FileReader("DukeQuill/src/resources/dictionary/Spanish.dic"))){
@@ -42,4 +46,5 @@ public class Dictionary {
         return words.contains(word);
         
     }
+
 }

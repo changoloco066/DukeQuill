@@ -1,6 +1,8 @@
 package com.dukequill.gui;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -11,6 +13,7 @@ import com.dukequill.analyzer.SpellErrors;
 import com.dukequill.lexer.Token;
 import com.dukequill.rules.RuleEngine;
 import com.dukequill.rules.RuleViolation;
+
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Lexer;
 
@@ -38,6 +41,9 @@ public class MainWindow extends JFrame {
     private List<Token> tokens;
     private List<SpellErrors> errors;
     private Lexer lexer;
+
+    private HashMap<Integer, List<String>> suggestionMap;
+    private HashMap<Integer, Integer> wordLengthMap;
    
 
     public MainWindow() throws Exception{
@@ -57,8 +63,31 @@ public class MainWindow extends JFrame {
         tabs.addTab("Syntax Errors", new JScrollPane(errorTable));
         
         // Area del texto principal
-        inputArea = new JTextPane();
+        inputArea = new JTextPane(){
+            
+            @Override
+            public String getToolTipText(java.awt.event.MouseEvent e){
+                int pos = viewToModel2D(e.getPoint());
+                if(suggestionMap != null){
+                    for(Map.Entry<Integer, List<String>> entry : suggestionMap.entrySet()){
+                        int start = entry.getKey();
+                        int length = wordLengthMap.getOrDefault(start, 0);              
+                        
+                        if(pos >=  start && pos < start + length){
+                            return " ¿Quisiste decir? " + entry.getValue();
+                        }
+                    }
+                }
+                return null; 
+            }
+        };
+
         inputArea.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 14));
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(inputArea);
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(inputArea);
+        javax.swing.ToolTipManager.sharedInstance().setInitialDelay(100);
+        javax.swing.ToolTipManager.sharedInstance().setDismissDelay(5000);
+        inputArea.setToolTipText("Texto");
         JScrollPane inputScroll = new JScrollPane(inputArea);
         inputScroll.setBorder(BorderFactory.createTitledBorder("Escribe aquí tu texto"));
         
@@ -131,15 +160,6 @@ public class MainWindow extends JFrame {
         loadErrors(errors);
         highlightErrors(errors, violations);
 
-        /*
-        // Pop up de cuando se encuentran uno o varios errores
-
-        if(!errors.isEmpty()){
-            JOptionPane.showMessageDialog(this, errors.size() + "Error(es) ortograficos encontrados", "Error", JOptionPane.ERROR_MESSAGE);
-            tabs.setSelectedIndex(0);
-        } 
-
-        */
     }
 
     private void loadViolations(List<RuleViolation> violations){
@@ -157,23 +177,31 @@ public class MainWindow extends JFrame {
     }
 
     private void highlightErrors(List<SpellErrors> errors, List<RuleViolation> violations) {
-    javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
-    highlighter.removeAllHighlights();
-    
-    String text = inputArea.getText();
-    
-    for(SpellErrors e : errors) {
-        String word = e.getLexeme();
-        int index = text.indexOf(word);
-        if(index >= 0) {
-            try {
-                highlighter.addHighlight(index, index + word.length(), errorPainter);
-            } catch(Exception ex) {
-                ex.printStackTrace();
+
+        suggestionMap = new HashMap<Integer, List<String>>();  
+        wordLengthMap = new HashMap<Integer, Integer>();
+
+        javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
+        highlighter.removeAllHighlights();
+        
+        String text = inputArea.getText();
+        
+        for(SpellErrors e : errors) {
+            String word = e.getLexeme();
+            int index = text.indexOf(word);
+            if(index >= 0) {
+                try {
+                    List<String> suggestions = checker.getSuggestions(word);
+                    suggestionMap.put(index, suggestions);
+                    wordLengthMap.put(index, word.length());
+                    
+                    highlighter.addHighlight(index, index + word.length(), errorPainter);
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
-    }
-    
+        
         for(RuleViolation v : violations) {
             int pos = v.getPosition();
             try {
@@ -181,36 +209,36 @@ public class MainWindow extends JFrame {
             } catch(Exception ex) {
                     ex.printStackTrace();
                 }
+            }
         }
-    }
 
     private static class WavyUnderlinePainter implements javax.swing.text.Highlighter.HighlightPainter {
-    private final Color color;
+        private final Color color;
 
-    public WavyUnderlinePainter(Color color) {
-        this.color = color;
-    }
+        public WavyUnderlinePainter(Color color) {
+            this.color = color;
+        }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c) {
-        try {
-            Rectangle r0 = c.modelToView(p0);
-            Rectangle r1 = c.modelToView(p1);
-            g.setColor(color);
-            int y = r0.y + r0.height - 2;
-            int x = r0.x;
-            int endX = r1.x;
-            int amplitude = 2;
-            int wavelength = 4;
-            while (x < endX) {
-                g.drawLine(x, y, x + wavelength / 2, y - amplitude);
-                g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
-                x += wavelength;
+        @SuppressWarnings("deprecation")
+        @Override
+        public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c) {
+            try {
+                Rectangle r0 = c.modelToView(p0);
+                Rectangle r1 = c.modelToView(p1);
+                g.setColor(color);
+                int y = r0.y + r0.height - 2;
+                int x = r0.x;
+                int endX = r1.x;
+                int amplitude = 2;
+                int wavelength = 4;
+                while (x < endX) {
+                    g.drawLine(x, y, x + wavelength / 2, y - amplitude);
+                    g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
+                    x += wavelength;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
-}
 }

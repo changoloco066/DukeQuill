@@ -74,7 +74,7 @@ public class MainWindow extends JFrame {
                         int length = wordLengthMap.getOrDefault(start, 0);              
                         
                         if(pos >=  start && pos < start + length){
-                            return " ¿Quisiste decir? " + entry.getValue();
+                            return " ¿Quisiste decir? " +  String.join(", ", entry.getValue());
                         }
                     }
                 }

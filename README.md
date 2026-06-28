@@ -138,4 +138,16 @@ La documentación del proyecto está escrita en español. Cada módulo incluye c
 
 ---
 
+## Créditos y recursos externos
+
+Este proyecto hace uso de los siguientes recursos de terceros:
+
+- **[Hunspell Spanish Dictionary](https://github.com/titoBouzout/Dictionaries)** — Diccionario ortográfico del español utilizado como base de datos de palabras válidas. Mantenido por titoBouzout.
+
+- **[LanguageTool](https://languagetool.org/)** — Librería de código abierto para análisis morfológico y gramatical del español. Utilizada para reconocer conjugaciones verbales y formas derivadas.
+
+- **[Duke](https://wiki.openjdk.org/display/duke/Main)** — Mascota oficial de Java, inspiración del nombre y espíritu del proyecto.
+
+---
+
 *Desarrollado con Java 21 *

@@ -15,7 +15,7 @@ public class SpellChecker {
     private final MorphAnalyzer morphAnalyzer;
     private final Levenshtein levenshtein;
 
-    public SpellChecker(Dictionary dictionary) throws Exception{
+    public SpellChecker(Dictionary dictionary, MorphAnalyzer morphAnalyzer) throws Exception{
         this.dictionary = dictionary;
         this.errors = new ArrayList<>();
         this.morphAnalyzer = new MorphAnalyzer();

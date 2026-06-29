@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
+import com.dukequill.analyzer.MorphAnalyzer;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
 import com.dukequill.lexer.Token;
@@ -37,6 +38,7 @@ public class MainWindow extends JFrame {
     private Dictionary dictionary;
     private SpellChecker checker;
     private RuleEngine ruleEngine;
+    private MorphAnalyzer morphAnalyzer;
 
     private List<Token> tokens;
     private List<SpellErrors> errors;
@@ -131,11 +133,13 @@ public class MainWindow extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
 
         // Inicializacion de la logica del corrector 
+        morphAnalyzer = new MorphAnalyzer();
         lexer = new Lexer();
         dictionary = new Dictionary();
         dictionary.loadDictionary();
-        checker = new SpellChecker(dictionary);
-        ruleEngine = new RuleEngine();
+        checker = new SpellChecker(dictionary, morphAnalyzer);
+        ruleEngine = new RuleEngine(morphAnalyzer);
+        
 
     
         // Accion de los botones

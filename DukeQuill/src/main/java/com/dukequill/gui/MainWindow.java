@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.print.attribute.standard.JobKOctets;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
@@ -77,10 +78,17 @@ public class MainWindow extends JFrame {
 
         JTextField wordField = new JTextField();
         JButton addButton = new JButton("Agregar");
+        JButton removeButton = new JButton("Eliminar");
+
+        JPanel buttonsRow = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonsRow.add(addButton);
+        buttonsRow.add(removeButton);
 
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(wordField, BorderLayout.CENTER);
-        inputPanel.add(addButton, BorderLayout.EAST);
+        inputPanel.add(buttonsRow, BorderLayout.SOUTH);
+   
+
 
         ignoredPanel = new JPanel(new BorderLayout());
         ignoredPanel.setBorder(BorderFactory.createTitledBorder("Palabras ignoradas"));
@@ -236,11 +244,26 @@ public class MainWindow extends JFrame {
             }
         });
 
+        removeButton.addActionListener(e ->{
+            String selected = ignoredList.getSelectedValue();
+            System.out.println("Seleccionado: " + selected);
+            if(selected != null){
+                checker.removeIgnoredWord(selected);
+                ignoredListModel.removeElement(selected);
+                try{
+                    analyzeText();
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
+
+        });
+
         menuItem.addActionListener(e -> {
             if(mainSplitPane.getRightComponent() == null) {
                 mainSplitPane.setRightComponent(ignoredPanel);
                 mainSplitPane.setDividerSize(5);
-                mainSplitPane.setDividerLocation(600);
+                mainSplitPane.setDividerLocation(650);
             } else {
                 mainSplitPane.setRightComponent(null);
                 mainSplitPane.setDividerSize(0);

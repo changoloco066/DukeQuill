@@ -42,6 +42,10 @@ public class SpellChecker {
         ignoredWords.add(word.toLowerCase());
     }
 
+    public void removeIgnoredWord(String word){
+        ignoredWords.remove(word.toLowerCase());
+    }
+
     public List<String> getSuggestions(String word){
 
         Map<String, Integer> candidates = new HashMap<>();

@@ -168,7 +168,7 @@ public class MainWindow extends JFrame {
                     JMenuItem ignoreItem = new JMenuItem("Agregar '" + word + "' al diccionario");
                     ignoreItem.addActionListener(ev -> {
                         checker.ignoredWord(word);
-                        ignoredListModel.addElement(word);
+                        addWordSorted(word);
                         try {
                             analyzeText();
                         } catch(Exception ex) {
@@ -234,7 +234,7 @@ public class MainWindow extends JFrame {
             String word = wordField.getText().trim();
             if(!word.isEmpty()) {
                 checker.ignoredWord(word);
-                ignoredListModel.addElement(word);
+                addWordSorted(word);
                 wordField.setText("");
                 try {
                     analyzeText();
@@ -333,6 +333,19 @@ public class MainWindow extends JFrame {
                 }
             }
         }
+
+    private void addWordSorted(String word) {
+        if(ignoredListModel.contains(word)){
+            JOptionPane.showMessageDialog(this, "La palabra ya se añadio al diccionario");
+            return;
+        }
+        int index = 0;
+        while(index < ignoredListModel.size() && 
+            ignoredListModel.get(index).compareToIgnoreCase(word) < 0) {
+            index++;
+        }
+        ignoredListModel.add(index, word);
+    }
 
     private static class WavyUnderlinePainter implements javax.swing.text.Highlighter.HighlightPainter {
         private final Color color;

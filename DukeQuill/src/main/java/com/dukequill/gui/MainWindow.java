@@ -27,6 +27,13 @@ public class MainWindow extends JFrame {
     private JTabbedPane tabs;
     private DefaultTableModel errorModel;
     private JTextPane inputArea;
+    private JMenuBar menuBar;
+    private JMenu herramientas;
+    private JMenuItem menuItem;
+    private JPanel ignoredPanel;
+    private DefaultListModel<String> ignoredListModel;
+    private JList<String> ignoredList;
+    private JSplitPane mainSplitPane;
 
     private javax.swing.Timer delayTimer;
     private javax.swing.text.Highlighter.HighlightPainter errorPainter;
@@ -55,6 +62,30 @@ public class MainWindow extends JFrame {
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
+        // Barra de Tareas
+        menuBar = new JMenuBar();
+        herramientas = new JMenu("Herramientas");
+        menuItem = new JMenuItem("Diccionario personalizado");
+
+        herramientas.add(menuItem);
+        menuBar.add(herramientas);
+        setJMenuBar(menuBar);
+
+        ignoredListModel = new DefaultListModel<>();
+        ignoredList = new JList<>(ignoredListModel);
+
+        JTextField wordField = new JTextField();
+        JButton addButton = new JButton("Agregar");
+
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.add(wordField, BorderLayout.CENTER);
+        inputPanel.add(addButton, BorderLayout.EAST);
+
+        ignoredPanel = new JPanel(new BorderLayout());
+        ignoredPanel.setBorder(BorderFactory.createTitledBorder("Palabras ignoradas"));
+        ignoredPanel.add(new JScrollPane(ignoredList), BorderLayout.CENTER);
+        ignoredPanel.add(inputPanel, BorderLayout.SOUTH);
 
         // Pestañas y tablas de resultados (tablas posible eliminacion o desuso en version final)
         tabs = new JTabbedPane();
@@ -111,6 +142,7 @@ public class MainWindow extends JFrame {
         inputArea.addMouseListener(new java.awt.event.MouseAdapter() {
         @Override
         public void mousePressed(java.awt.event.MouseEvent e) {
+
             if(javax.swing.SwingUtilities.isRightMouseButton(e)) {
                 int pos = inputArea.viewToModel2D(e.getPoint());
                 String text = inputArea.getText();
@@ -128,6 +160,7 @@ public class MainWindow extends JFrame {
                     JMenuItem ignoreItem = new JMenuItem("Agregar '" + word + "' al diccionario");
                     ignoreItem.addActionListener(ev -> {
                         checker.ignoredWord(word);
+                        ignoredListModel.addElement(word);
                         try {
                             analyzeText();
                         } catch(Exception ex) {
@@ -157,7 +190,10 @@ public class MainWindow extends JFrame {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, inputScroll, tabs);
         splitPane.setDividerLocation(180);
         splitPane.setResizeWeight(0.3);
-        add(splitPane, BorderLayout.CENTER);
+        mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, splitPane, null);
+        mainSplitPane.setResizeWeight(1.0);
+        mainSplitPane.setDividerSize(0);
+        add(mainSplitPane, BorderLayout.CENTER);
 
         // Panel de botones 
         JButton analyzeBtn = new JButton("Analizar texto");  
@@ -175,18 +211,42 @@ public class MainWindow extends JFrame {
         checker = new SpellChecker(dictionary, morphAnalyzer);
         ruleEngine = new RuleEngine(morphAnalyzer);
         
-
     
         // Accion de los botones
         analyzeBtn.addActionListener(e -> {
             try {
                 analyzeText();
             } catch (Exception e1) {
-                    e1.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Error: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e1.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error: " + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        addButton.addActionListener(e -> {
+            String word = wordField.getText().trim();
+            if(!word.isEmpty()) {
+                checker.ignoredWord(word);
+                ignoredListModel.addElement(word);
+                wordField.setText("");
+                try {
+                    analyzeText();
+                } catch(Exception ex) {
+                    ex.printStackTrace();
                 }
-            });
-        }
+            }
+        });
+
+        menuItem.addActionListener(e -> {
+            if(mainSplitPane.getRightComponent() == null) {
+                mainSplitPane.setRightComponent(ignoredPanel);
+                mainSplitPane.setDividerSize(5);
+                mainSplitPane.setDividerLocation(600);
+            } else {
+                mainSplitPane.setRightComponent(null);
+                mainSplitPane.setDividerSize(0);
+            }
+        });
+    }
 
      private void analyzeText() throws Exception{
         String input = inputArea.getText();

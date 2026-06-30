@@ -51,10 +51,12 @@ public class MainWindow extends JFrame {
     private List<Token> tokens;
     private List<SpellErrors> errors;
     private Lexer lexer;
-
+    
+    // Mapas para el uso de ToolTip
     private HashMap<Integer, List<String>> suggestionMap;
     private HashMap<Integer, Integer> wordLengthMap;
-   
+    private HashMap<Integer, String> ruleMessageMap;
+    private HashMap<Integer, Integer> ruleLengthMap;
 
     public MainWindow() throws Exception{
 
@@ -87,6 +89,11 @@ public class MainWindow extends JFrame {
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(wordField, BorderLayout.CENTER);
         inputPanel.add(buttonsRow, BorderLayout.SOUTH);
+
+        JMenu verMenu = new JMenu("Ver tablas de errores");
+        JMenuItem toggleTabsItem = new JMenuItem("Mostrar/ocultar tablas");
+        verMenu.add(toggleTabsItem);
+        menuBar.add(verMenu);
    
 
 
@@ -97,7 +104,7 @@ public class MainWindow extends JFrame {
 
         // Pestañas y tablas de resultados (tablas posible eliminacion o desuso en version final)
         tabs = new JTabbedPane();
-        
+        tabs.setVisible(false);
         String[] errorCols = {"Linea", "Posicion", "Error", "Contexto"};
         errorModel = new DefaultTableModel(errorCols, 0);
         errorTable = new JTable(errorModel);
@@ -116,6 +123,16 @@ public class MainWindow extends JFrame {
                         
                         if(pos >=  start && pos < start + length){
                             return " ¿Quisiste decir? " +  String.join(", ", entry.getValue());
+                        }
+                    }
+                }
+
+                if(ruleMessageMap != null){
+                    for(Map.Entry<Integer, String> entry : ruleMessageMap.entrySet()){
+                        int start = entry.getKey();
+                        int length = ruleLengthMap.getOrDefault(start, 0);
+                        if(pos >= start && pos < start + length){
+                            return entry.getValue();
                         }
                     }
                 }
@@ -244,6 +261,18 @@ public class MainWindow extends JFrame {
             }
         });
 
+        toggleTabsItem.addActionListener(e -> {
+            boolean visible = !tabs.isVisible();
+            tabs.setVisible(!tabs.isVisible());
+            if(visible){
+                splitPane.setDividerLocation(180);
+            } else{
+                splitPane.setDividerLocation(1.0);
+            }
+            splitPane.revalidate();
+            splitPane.repaint();
+        });
+
         removeButton.addActionListener(e ->{
             String selected = ignoredList.getSelectedValue();
             System.out.println("Seleccionado: " + selected);
@@ -302,6 +331,8 @@ public class MainWindow extends JFrame {
 
         suggestionMap = new HashMap<Integer, List<String>>();  
         wordLengthMap = new HashMap<Integer, Integer>();
+        ruleMessageMap = new HashMap<>();
+        ruleLengthMap = new HashMap<>();
 
         javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
         highlighter.removeAllHighlights();
@@ -326,7 +357,10 @@ public class MainWindow extends JFrame {
         
         for(RuleViolation v : violations) {
             int pos = v.getPosition();
+            System.out.println("Violación: " + v.getMessage() + " en pos " + pos);
             try {
+                ruleMessageMap.put(pos, v.getMessage());
+                ruleLengthMap.put(pos, v.getLexeme().length());
                 highlighter.addHighlight(pos, pos + v.getLexeme().length(), rulePainter);
             } catch(Exception ex) {
                     ex.printStackTrace();

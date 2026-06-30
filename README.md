@@ -37,8 +37,8 @@ DukeQuill recibe un texto en español y lo analiza en varias capas:
 - [x] Detección de espacio antes de puntuación
 - [x] Punto al final de oración
 - [x] Subrayado en tiempo real (rojo = ortografía, azul = puntuación)
-- [ ] Auto corrector de palabras (usando el algortimo de Levenshtein distance)
-- [ ] Palabras confusables (`haber/a ver`, `sino/si no`, `porque/por qué`)
+- [x] Auto corrector de palabras (usando el algortimo de Levenshtein distance)
+- [x] Palabras confusables (`haber/a ver`, `sino/si no`, `porque/por qué`)
 
 ---
 

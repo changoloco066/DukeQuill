@@ -14,12 +14,14 @@ public class SpellChecker {
     private final List<SpellErrors> errors;
     private final MorphAnalyzer morphAnalyzer;
     private final Levenshtein levenshtein;
+    private Set<String> ignoredWords;
 
     public SpellChecker(Dictionary dictionary, MorphAnalyzer morphAnalyzer) throws Exception{
         this.dictionary = dictionary;
         this.errors = new ArrayList<>();
-        this.morphAnalyzer = new MorphAnalyzer();
+        this.morphAnalyzer =  morphAnalyzer;
         this.levenshtein = new Levenshtein();
+        this.ignoredWords = new HashSet<>();
     }
 
     public List<SpellErrors> check(List<Token> tokens) throws Exception{
@@ -27,13 +29,21 @@ public class SpellChecker {
         for(Token token : tokens){
             if(token.getType() == TokenType.WORD){
                 if(!dictionary.contains(token.getLexeme()) && !dictionary.contains(token.getLexeme().toLowerCase())){
-                    if(!morphAnalyzer.isValidWord(token.getLexeme())){
+                    if(!morphAnalyzer.isValidWord(token.getLexeme()) && !ignoredWords.contains(token.getLexeme() .toLowerCase())){
                         errors.add(new SpellErrors(token));
                     }
                 }
             }
         }
         return errors;
+    }
+
+    public void ignoredWord(String word){
+        ignoredWords.add(word.toLowerCase());
+    }
+
+    public void removeIgnoredWord(String word){
+        ignoredWords.remove(word.toLowerCase());
     }
 
     public List<String> getSuggestions(String word){

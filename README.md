@@ -37,13 +37,13 @@ DukeQuill recibe un texto en español y lo analiza en varias capas:
 - [x] Detección de espacio antes de puntuación
 - [x] Punto al final de oración
 - [x] Subrayado en tiempo real (rojo = ortografía, azul = puntuación)
+- [ ] Auto corrector de palabras (usando el algortimo de Levenshtein distance)
+- [ ] Palabras confusables (`haber/a ver`, `sino/si no`, `porque/por qué`)
 
 ---
 
 ## Lo que viene
 
-- [ ] Auto corrector de palabras (usando el algortimo de Levenshtein distance)
-- [ ] Palabras confusables (`haber/a ver`, `sino/si no`, `porque/por qué`)
 - [ ] Exportar resultados a archivo `.txt`
 - [ ] Estadísticas del texto (palabras, oraciones, densidad de errores)
 - [ ] API REST con Spring Boot para versión web

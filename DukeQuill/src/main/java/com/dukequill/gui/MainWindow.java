@@ -107,6 +107,41 @@ public class MainWindow extends JFrame {
         });
         delayTimer.setRepeats(false);
 
+        //Mouse Adapter para hacer clik derecho
+        inputArea.addMouseListener(new java.awt.event.MouseAdapter() {
+        @Override
+        public void mousePressed(java.awt.event.MouseEvent e) {
+            if(javax.swing.SwingUtilities.isRightMouseButton(e)) {
+                int pos = inputArea.viewToModel2D(e.getPoint());
+                String text = inputArea.getText();
+                
+                // buscar los límites de la palabra en esa posición
+                int start = pos;
+                int end = pos;
+                while(start > 0 && Character.isLetter(text.charAt(start - 1))) start--;
+                while(end < text.length() && Character.isLetter(text.charAt(end))) end++;
+                
+                String word = text.substring(start, end);
+                
+                if(!word.isEmpty()) {
+                    JPopupMenu menu = new JPopupMenu();
+                    JMenuItem ignoreItem = new JMenuItem("Agregar '" + word + "' al diccionario");
+                    ignoreItem.addActionListener(ev -> {
+                        checker.ignoredWord(word);
+                        try {
+                            analyzeText();
+                        } catch(Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+                    menu.add(ignoreItem);
+                    menu.show(inputArea, e.getX(), e.getY());
+                }
+            }
+        }
+    });
+
+
         // Listener para detectar los cambios en el texto
         inputArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { delayTimer.restart(); }
@@ -167,11 +202,11 @@ public class MainWindow extends JFrame {
     }
 
     private void loadViolations(List<RuleViolation> violations){
-    ruleModel.setRowCount(0);
-    for(RuleViolation v : violations){
-        ruleModel.addRow(new Object[]{ v.getLine(), v.getPosition(), v.getRuleName(), v.getMessage() });
+        ruleModel.setRowCount(0);
+        for(RuleViolation v : violations){
+            ruleModel.addRow(new Object[]{ v.getLine(), v.getPosition(), v.getRuleName(), v.getMessage() });
+        }
     }
-}
 
     private void loadErrors(List<SpellErrors> errors){
         errorModel.setRowCount(0);
@@ -245,4 +280,5 @@ public class MainWindow extends JFrame {
             }
         }
     }
+  
 }

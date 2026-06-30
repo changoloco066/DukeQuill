@@ -4,8 +4,6 @@ import org.languagetool.language.Spanish;
 import org.languagetool.tagging.Tagger;
 import java.util.List;
 
-import javax.print.DocFlavor.STRING;
-
 public class MorphAnalyzer {
 
     private final Tagger tagger;

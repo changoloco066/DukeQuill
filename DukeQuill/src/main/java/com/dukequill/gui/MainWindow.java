@@ -70,6 +70,10 @@ public class MainWindow extends JFrame {
         menuBar = new JMenuBar();
         herramientas = new JMenu("Herramientas");
         menuItem = new JMenuItem("Diccionario personalizado");
+        java.net.URL iconUrl = getClass().getResource("/icons/quill.png");
+        ImageIcon icon = new ImageIcon(iconUrl);
+        Image scaled = icon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+        menuItem.setIcon(new ImageIcon(scaled));
 
         herramientas.add(menuItem);
         menuBar.add(herramientas);

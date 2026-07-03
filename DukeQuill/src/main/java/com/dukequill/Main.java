@@ -1,5 +1,6 @@
 package com.dukequill;
 
+import com.dukequill.analyzer.algorithms.DamerauLevenshtein;
 import com.dukequill.gui.MainWindow;
 
 public class Main {
@@ -10,6 +11,7 @@ public class Main {
             MainWindow gui = new MainWindow();
             javax.swing.SwingUtilities.invokeLater(() -> {
             gui.setVisible(true);
+
         });   
     }
 }

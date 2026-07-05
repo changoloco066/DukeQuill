@@ -3,7 +3,17 @@ package com.dukequill.gui;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.pdfbox.Loader;
+
+import javax.print.DocFlavor.STRING;
 import javax.print.attribute.standard.JobKOctets;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -28,9 +38,11 @@ public class MainWindow extends JFrame {
     private JMenuBar menuBar;
     private JMenu herramientas;
     private JMenu verMenu;
+    private JMenu archivoMenu;
     private JMenuItem menuItem;
     private JMenuItem toggleTabsItem;
-
+    private JMenuItem exportMenuItem;
+    private JMenuItem openMenuItem;
     // Área de texto principal 
     private JTextPane inputArea;
     private javax.swing.Timer delayTimer;
@@ -151,7 +163,6 @@ public class MainWindow extends JFrame {
         
         for(RuleViolation v : violations) {
             int pos = v.getPosition();
-            System.out.println("Violación: " + v.getMessage() + " en pos " + pos);
             try {
                 ruleMessageMap.put(pos, v.getMessage());
                 ruleLengthMap.put(pos, v.getLexeme().length());
@@ -186,6 +197,16 @@ public class MainWindow extends JFrame {
 
     private void initMenuBar() {
         menuBar = new JMenuBar();
+
+        openMenuItem = new JMenuItem("Abrir archivo");
+
+        archivoMenu = new JMenu("Archivo");
+        exportMenuItem = new JMenuItem("Exportar Resultados");
+        archivoMenu.add(openMenuItem);
+        archivoMenu.addSeparator();
+        archivoMenu.add(exportMenuItem);
+        menuBar.add(archivoMenu);
+       
         herramientas = new JMenu("Herramientas");
         menuItem = new JMenuItem("Diccionario personalizado");
         java.net.URL iconUrl = getClass().getResource("/icons/quill.png");
@@ -373,6 +394,51 @@ public class MainWindow extends JFrame {
             } else {
                 mainSplitPane.setRightComponent(null);
                 mainSplitPane.setDividerSize(0);
+            }
+        });
+
+        exportMenuItem.addActionListener(e ->{
+            
+            JOptionPane.showMessageDialog(this, "Funcion proximamente disponible", "Exportar", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        openMenuItem.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Abrir archivo");
+            fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "Archivos de texto y PDF (*.txt, *.pdf),", "txt", "pdf")
+            );
+
+            int result = fileChooser.showOpenDialog(this);
+            if(result == JFileChooser.APPROVE_OPTION){
+                File file = fileChooser.getSelectedFile();
+                String fileName = file.getName().toLowerCase();
+                //String line;
+
+                try(BufferedReader reader = new BufferedReader(new FileReader(file))){
+                    String content = "";
+                    if(fileName.endsWith(".txt")){
+                        StringBuilder sb = new StringBuilder();
+                        String line; 
+                        while((line = reader.readLine()) != null){
+                            sb.append(line).append("\n");
+                        }
+                        content = sb.toString();
+
+                    }else if (fileName.endsWith(".pdf")){
+                        PDDocument doc = Loader.loadPDF(file);
+                        PDFTextStripper stripper = new PDFTextStripper();
+                        content = stripper.getText(doc);
+                        doc.close();
+                    }
+                    inputArea.setText(content);
+                    analyzeText();
+
+                }catch(IOException ex){
+                    JOptionPane.showMessageDialog(this, "Algo salio mal " + ex.getMessage());
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
         });
 

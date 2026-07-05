@@ -1,5 +1,8 @@
 package com.dukequill;
 
+import javax.swing.UIManager;
+
+import com.dukequill.analyzer.algorithms.DamerauLevenshtein;
 import com.dukequill.gui.MainWindow;
 
 public class Main {
@@ -7,9 +10,11 @@ public class Main {
             System.setOut(new java.io.PrintStream(System.out, true, "UTF-8"));
             System.setProperty("file.encoding", "UTF-8");
             
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             MainWindow gui = new MainWindow();
             javax.swing.SwingUtilities.invokeLater(() -> {
             gui.setVisible(true);
+
         });   
     }
 }

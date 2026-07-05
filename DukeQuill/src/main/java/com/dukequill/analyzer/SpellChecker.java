@@ -3,6 +3,7 @@ package com.dukequill.analyzer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.dukequill.analyzer.algorithms.DamerauLevenshtein;
 import com.dukequill.analyzer.algorithms.Levenshtein;
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Token;
@@ -13,14 +14,14 @@ public class SpellChecker {
     private final Dictionary dictionary;
     private final List<SpellErrors> errors;
     private final MorphAnalyzer morphAnalyzer;
-    private final Levenshtein levenshtein;
+    private final DamerauLevenshtein damerauLevenshtein;
     private Set<String> ignoredWords;
 
     public SpellChecker(Dictionary dictionary, MorphAnalyzer morphAnalyzer) throws Exception{
         this.dictionary = dictionary;
         this.errors = new ArrayList<>();
         this.morphAnalyzer =  morphAnalyzer;
-        this.levenshtein = new Levenshtein();
+        this.damerauLevenshtein = new DamerauLevenshtein();
         this.ignoredWords = new HashSet<>();
     }
 
@@ -49,11 +50,12 @@ public class SpellChecker {
     public List<String> getSuggestions(String word){
 
         Map<String, Integer> candidates = new HashMap<>();
+        int maxDistance = word.length() <= 5 ? 1 : word.length() <= 8 ? 2 : 3;
 
         for(String dictWord : dictionary.getWords()){
-        int distance = levenshtein.calculate(word, dictWord);
-            if(distance <= 2){
-                candidates.put(dictWord, distance);           
+        int distance = damerauLevenshtein.calculate(word, dictWord);
+            if(distance <= maxDistance){
+                candidates.put(dictWord, distance);        
              }
         }
         return candidates.entrySet()              // convierte el Map en una lista de pares (palabra, distancia)
@@ -64,3 +66,20 @@ public class SpellChecker {
         .collect(Collectors.toList());      // junta todo en una List<String>
     }
 }
+
+
+/*
+    // esto:
+    int maxDistance = word.length() <= 5 ? 1 : word.length() <= 8 ? 2 : 3;
+
+    // es equivalente a: 
+    int maxDistance;
+    if(word.length() <= 5) {
+        maxDistance = 1;
+    } else if(word.length() <= 8) {
+        maxDistance = 2;
+    } else {
+        maxDistance = 3;
+    }
+
+*/

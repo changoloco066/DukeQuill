@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.spec.ECFieldF2m;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -19,6 +20,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
+import com.dukequill.analyzer.AccentChecker;
+import com.dukequill.analyzer.AccentViolations;
 import com.dukequill.analyzer.MorphAnalyzer;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
@@ -43,6 +46,7 @@ public class MainWindow extends JFrame {
     private JMenuItem toggleTabsItem;
     private JMenuItem exportMenuItem;
     private JMenuItem openMenuItem;
+
     // Área de texto principal 
     private JTextPane inputArea;
     private javax.swing.Timer delayTimer;
@@ -79,6 +83,7 @@ public class MainWindow extends JFrame {
     private RuleEngine ruleEngine;
     private MorphAnalyzer morphAnalyzer;
     private Lexer lexer;
+    private AccentChecker accentChecker;
 
     // Listas de resultados 
     private List<Token> tokens;
@@ -112,11 +117,11 @@ public class MainWindow extends JFrame {
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
         List<RuleViolation> violations = ruleEngine.check(tokens);
+        List<AccentViolations> accentErros = accentChecker.check(input);
 
         loadViolations(violations);
         loadErrors(errors);
-        highlightErrors(errors, violations);
-
+        highlightErrors(errors, violations, accentErros);
     }
 
     private void loadViolations(List<RuleViolation> violations){
@@ -133,7 +138,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void highlightErrors(List<SpellErrors> errors, List<RuleViolation> violations) {
+    private void highlightErrors(List<SpellErrors> errors, List<RuleViolation> violations, List<AccentViolations> accentErrors) {
 
         suggestionMap = new HashMap<Integer, List<String>>();  
         wordLengthMap = new HashMap<Integer, Integer>();
@@ -171,7 +176,16 @@ public class MainWindow extends JFrame {
                     ex.printStackTrace();
                 }
             }
+
+        for(AccentViolations a: accentErrors){
+            int pos = a.getFromPos();
+            try{
+                highlighter.addHighlight(pos, pos + a.getOriginalText().length(), rulePainter);
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
         }
+    }
 
     private void addWordSorted(String word) {
         if(ignoredListModel.contains(word)){
@@ -193,6 +207,7 @@ public class MainWindow extends JFrame {
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary, morphAnalyzer);
         ruleEngine = new RuleEngine(morphAnalyzer);
+        accentChecker = new AccentChecker();
     }
 
     private void initMenuBar() {

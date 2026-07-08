@@ -150,24 +150,8 @@ public class MainWindow extends JFrame {
         
         String text = inputArea.getText();
         
-        for(SpellErrors e : errors) {
-            String word = e.getLexeme();
-            int index = text.indexOf(word);
-            if(index >= 0) {
-                try {
-                    List<String> suggestions = checker.getSuggestions(word);
-                    suggestionMap.put(index, suggestions);
-                    wordLengthMap.put(index, word.length());
-                    
-                    highlighter.addHighlight(index, index + word.length(), errorPainter);
-                } catch(Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        
         for(RuleViolation v : violations) {
-            int pos = v.getPosition();
+            int pos = getAbsolutePosition(text, v.getLine(), v.getPosition());
             try {
                 ruleMessageMap.put(pos, v.getMessage());
                 ruleLengthMap.put(pos, v.getLexeme().length());
@@ -181,8 +165,31 @@ public class MainWindow extends JFrame {
             int pos = a.getFromPos();
             try{
                 highlighter.addHighlight(pos, pos + a.getOriginalText().length(), rulePainter);
+                ruleMessageMap.put(pos, a.getMessage() + " (sugerencia: " + a.getSuggestedReplacements() + ")");
+                ruleLengthMap.put(pos, a.getOriginalText().length());
             }catch (Exception ex){
                 ex.printStackTrace();
+            }
+        }
+
+        for(SpellErrors e : errors) {
+            String word = e.getLexeme();
+            int index = getAbsolutePosition(text, e.getLine(), e.getPosition());    
+            if(index >= 0) {
+                try {
+                    boolean isAccentError = accentErrors.stream()
+                        .anyMatch(a -> a.getOriginalText().equals(word));
+
+                    if(!isAccentError) {
+                        highlighter.addHighlight(index, index + word.length(), errorPainter);
+                    }
+                    List<String> suggestions = checker.getSuggestions(word);
+                    suggestionMap.put(index, suggestions);
+                    wordLengthMap.put(index, word.length());
+
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
@@ -388,7 +395,6 @@ public class MainWindow extends JFrame {
 
         removeButton.addActionListener(e ->{
             String selected = ignoredList.getSelectedValue();
-            System.out.println("Seleccionado: " + selected);
             if(selected != null){
                 checker.removeIgnoredWord(selected);
                 ignoredListModel.removeElement(selected);
@@ -501,6 +507,15 @@ public class MainWindow extends JFrame {
         });
     }
 
+    private int getAbsolutePosition(String text, int line, int column) {
+        String[] lines = text.split("\n", -1); // el -1 es para conservar las lineas vacias al final
+        int absolutePos = 0;
+        for(int i = 0; i < line - 1; i++) {  // ciclo para iterar por todo el error, sumando las longitudes de las lineas previas
+            absolutePos += lines[i].length() + 1; // +1 por el \n
+        }
+    return absolutePos + column; // se le suma la columna del token dentro de su linea para dar con la posicion absoluta
+}
+
     private static class WavyUnderlinePainter implements javax.swing.text.Highlighter.HighlightPainter {
         private final Color color;
 
@@ -514,6 +529,7 @@ public class MainWindow extends JFrame {
             try {
                 Rectangle r0 = c.modelToView(p0);
                 Rectangle r1 = c.modelToView(p1);
+                if(r0 == null || r1 == null) return;
                 g.setColor(color);
                 int y = r0.y + r0.height - 2;
                 int x = r0.x;

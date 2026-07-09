@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.dukequill.analyzer.MorphAnalyzer;
 import com.dukequill.lexer.Token;
-import com.dukequill.rules.*;
+
 
 public class RuleEngine {
     private List<Rule> rules;

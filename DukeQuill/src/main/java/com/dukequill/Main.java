@@ -2,7 +2,6 @@ package com.dukequill;
 
 import javax.swing.UIManager;
 
-import com.dukequill.analyzer.algorithms.DamerauLevenshtein;
 import com.dukequill.gui.MainWindow;
 
 public class Main {

@@ -7,17 +7,14 @@ import java.util.Set;
 import java.util.HashSet;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.spec.ECFieldF2m;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.Loader;
 
-import javax.print.DocFlavor.STRING;
-import javax.print.attribute.standard.JobKOctets;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
@@ -74,7 +71,6 @@ public class MainWindow extends JFrame {
     // Layout principal 
     private JSplitPane mainSplitPane;
     private JSplitPane splitPane;
-    private JScrollPane scrollPane;
 
     // Botones del panel inferior 
     private JButton analyzeBtn;
@@ -87,10 +83,6 @@ public class MainWindow extends JFrame {
     private MorphAnalyzer morphAnalyzer;
     private Lexer lexer;
     private AccentChecker accentChecker;
-
-    // Listas de resultados 
-    private List<Token> tokens;
-    private List<SpellErrors> errors;
 
     // Mapas para tooltips 
     private HashMap<Integer, List<String>> suggestionMap;

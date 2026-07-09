@@ -151,8 +151,8 @@ public class MainWindow extends JFrame {
         javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
         highlighter.removeAllHighlights();
         
-        String text = inputArea.getText();
-        
+        //String text = inputArea.getText();
+        String text = inputArea.getText().replace("\r\n", "\n").replace("\r", "\n");
         for(RuleViolation v : violations) {
             int pos = getAbsolutePosition(text, v.getLine(), v.getPosition());
             try {

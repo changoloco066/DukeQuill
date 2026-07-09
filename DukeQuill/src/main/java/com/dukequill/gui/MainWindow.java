@@ -3,11 +3,14 @@ package com.dukequill.gui;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.spec.ECFieldF2m;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -19,6 +22,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
+import com.dukequill.analyzer.AccentChecker;
+import com.dukequill.analyzer.AccentViolations;
 import com.dukequill.analyzer.MorphAnalyzer;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
@@ -30,6 +35,7 @@ import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Lexer;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 
 public class MainWindow extends JFrame {
@@ -43,6 +49,7 @@ public class MainWindow extends JFrame {
     private JMenuItem toggleTabsItem;
     private JMenuItem exportMenuItem;
     private JMenuItem openMenuItem;
+
     // Área de texto principal 
     private JTextPane inputArea;
     private javax.swing.Timer delayTimer;
@@ -79,6 +86,7 @@ public class MainWindow extends JFrame {
     private RuleEngine ruleEngine;
     private MorphAnalyzer morphAnalyzer;
     private Lexer lexer;
+    private AccentChecker accentChecker;
 
     // Listas de resultados 
     private List<Token> tokens;
@@ -112,11 +120,11 @@ public class MainWindow extends JFrame {
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
         List<RuleViolation> violations = ruleEngine.check(tokens);
+        List<AccentViolations> accentErros = accentChecker.check(input);
 
         loadViolations(violations);
         loadErrors(errors);
-        highlightErrors(errors, violations);
-
+        highlightErrors(tokens, errors, violations, accentErros);
     }
 
     private void loadViolations(List<RuleViolation> violations){
@@ -133,7 +141,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void highlightErrors(List<SpellErrors> errors, List<RuleViolation> violations) {
+    private void highlightErrors(List<Token> tokens, List<SpellErrors> errors, List<RuleViolation> violations, List<AccentViolations> accentErrors) {
 
         suggestionMap = new HashMap<Integer, List<String>>();  
         wordLengthMap = new HashMap<Integer, Integer>();
@@ -143,26 +151,10 @@ public class MainWindow extends JFrame {
         javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
         highlighter.removeAllHighlights();
         
-        String text = inputArea.getText();
-        
-        for(SpellErrors e : errors) {
-            String word = e.getLexeme();
-            int index = text.indexOf(word);
-            if(index >= 0) {
-                try {
-                    List<String> suggestions = checker.getSuggestions(word);
-                    suggestionMap.put(index, suggestions);
-                    wordLengthMap.put(index, word.length());
-                    
-                    highlighter.addHighlight(index, index + word.length(), errorPainter);
-                } catch(Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        
+        //String text = inputArea.getText();
+        String text = inputArea.getText().replace("\r\n", "\n").replace("\r", "\n");
         for(RuleViolation v : violations) {
-            int pos = v.getPosition();
+            int pos = getAbsolutePosition(text, v.getLine(), v.getPosition());
             try {
                 ruleMessageMap.put(pos, v.getMessage());
                 ruleLengthMap.put(pos, v.getLexeme().length());
@@ -171,7 +163,57 @@ public class MainWindow extends JFrame {
                     ex.printStackTrace();
                 }
             }
+
+        Set<Integer> accentHighlighted = new HashSet<>();
+        for(AccentViolations a : accentErrors){
+            int rawPos = a.getFromPos();
+            Token tokenMatch = null;
+
+            for(Token t : tokens){
+                if(t.getType() == com.dukequill.lexer.TokenType.WORD){
+                    int tStart = getAbsolutePosition(text, t.getLine(), t.getPosition());
+                    int tEnd = tStart + t.getLexeme().length();
+                    if(rawPos >= tStart && rawPos < tEnd){
+                        tokenMatch = t;
+                        break;
+                    }
+                }
+            }
+
+            if(tokenMatch != null){
+                int start = getAbsolutePosition(text, tokenMatch.getLine(), tokenMatch.getPosition());
+                if(!accentHighlighted.contains(start)){
+                    accentHighlighted.add(start);
+                    try{
+                        highlighter.addHighlight(start, start + tokenMatch.getLexeme().length(), rulePainter);
+                        ruleMessageMap.put(start, a.getMessage() + " (sugerencia: " + a.getSuggestedReplacements() + ")");
+                        ruleLengthMap.put(start, tokenMatch.getLexeme().length());
+                    }catch (Exception ex){ ex.printStackTrace(); }
+                }
+            }
         }
+
+        for(SpellErrors e : errors) {
+            String word = e.getLexeme();
+            int index = getAbsolutePosition(text, e.getLine(), e.getPosition());    
+            if(index >= 0) {
+                try {
+                    boolean isAccentError = accentErrors.stream()
+                        .anyMatch(a -> a.getOriginalText().equals(word));
+
+                    if(!isAccentError) {
+                        highlighter.addHighlight(index, index + word.length(), errorPainter);
+                    }
+                    List<String> suggestions = checker.getSuggestions(word);
+                    suggestionMap.put(index, suggestions);
+                    wordLengthMap.put(index, word.length());
+
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
 
     private void addWordSorted(String word) {
         if(ignoredListModel.contains(word)){
@@ -193,6 +235,7 @@ public class MainWindow extends JFrame {
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary, morphAnalyzer);
         ruleEngine = new RuleEngine(morphAnalyzer);
+        accentChecker = new AccentChecker();
     }
 
     private void initMenuBar() {
@@ -373,7 +416,6 @@ public class MainWindow extends JFrame {
 
         removeButton.addActionListener(e ->{
             String selected = ignoredList.getSelectedValue();
-            System.out.println("Seleccionado: " + selected);
             if(selected != null){
                 checker.removeIgnoredWord(selected);
                 ignoredListModel.removeElement(selected);
@@ -486,34 +528,47 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private static class WavyUnderlinePainter implements javax.swing.text.Highlighter.HighlightPainter {
+    private int getAbsolutePosition(String text, int line, int column) {
+        String[] lines = text.split("\n", -1); // el -1 es para conservar las lineas vacias al final
+        int absolutePos = 0;
+        for(int i = 0; i < line - 1; i++) {  // ciclo para iterar por todo el error, sumando las longitudes de las lineas previas
+            absolutePos += lines[i].length() + 1; // +1 por el \n
+        }
+    return absolutePos + column; // se le suma la columna del token dentro de su linea para dar con la posicion absoluta
+}
+
+    private static class WavyUnderlinePainter extends javax.swing.text.LayeredHighlighter.LayerPainter {
         private final Color color;
 
-        public WavyUnderlinePainter(Color color) {
-            this.color = color;
-        }
-    
-        @SuppressWarnings("deprecation")
-        @Override
-        public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c) {
-            try {
-                Rectangle r0 = c.modelToView(p0);
-                Rectangle r1 = c.modelToView(p1);
-                g.setColor(color);
-                int y = r0.y + r0.height - 2;
-                int x = r0.x;
-                int endX = r1.x;
-                int amplitude = 2;
-                int wavelength = 4;
-                while (x < endX) {
-                    g.drawLine(x, y, x + wavelength / 2, y - amplitude);
-                    g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
-                    x += wavelength;
-                }
+    public WavyUnderlinePainter(Color color) {
+        this.color = color;
+    }
+
+    // Requerido por la interfaz HighlightPainter, pero no se usa
+    // porque JTextPane usa un LayeredHighlighter que llama a paintLayer().
+    @Override
+    public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c){
+        // sin implementacion ya que paintLayer() es el que pinta
+    }
+    public Shape paintLayer(Graphics g, int p0, int p1, Shape bounds, JTextComponent c, javax.swing.text.View view) {
+        try {
+            Rectangle2D r0 = view.modelToView(p0, javax.swing.text.Position.Bias.Forward, p1, javax.swing.text.Position.Bias.Backward, bounds).getBounds2D();
+            g.setColor(color);
+            int y = (int)(r0.getY() + r0.getHeight()) - 2;
+            int x = (int) r0.getX();
+            int endX = (int)(r0.getX() + r0.getWidth());
+            int amplitude = 2;
+            int wavelength = 4;
+            while (x < endX) {
+                g.drawLine(x, y, x + wavelength / 2, y - amplitude);
+                g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
+                x += wavelength;
+            }
+            return r0.getBounds();
             } catch (Exception e) {
                 e.printStackTrace();
+                return null;
             }
         }
     }
-  
 }

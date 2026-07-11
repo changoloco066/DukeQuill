@@ -1,5 +1,33 @@
 package com.dukequill.gui;
 
+/**
+ * Clase de interfaz gráfica — ventana principal de DukeQuill.
+ *
+ * <p>Coordina todos los componentes visuales y conecta la lógica del corrector
+ * con la interfaz de usuario. Implementa análisis en tiempo real mediante un
+ * {@link javax.swing.Timer} con delay de 500ms para no analizar en cada keystroke.</p>
+ *
+ * <p>Componentes principales:
+ * <ul>
+ *   <li>Área de texto con subrayado ondulado (rojo = ortografía, azul = puntuación/gramática)</li>
+ *   <li>Tooltips con sugerencias de corrección al pasar el mouse</li>
+ *   <li>Panel lateral de palabras ignoradas</li>
+ *   <li>Barra de menú (Archivo, Herramientas, Ver)</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Clases de lógica que orquesta:
+ * {@link com.dukequill.lexer.Lexer},
+ * {@link com.dukequill.analyzer.SpellChecker},
+ * {@link com.dukequill.rules.RuleEngine},
+ * {@link com.dukequill.analyzer.AccentChecker}</p>
+ *
+ * @see SpellChecker
+ * @see RuleEngine
+ * @see AccentChecker
+ */
+
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

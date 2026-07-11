@@ -1,4 +1,21 @@
 package com.dukequill.analyzer;
+
+/**
+ * Clase de lógica — detector de errores de acentuación contextual.
+ *
+ * <p>Usa LanguageTool ({@link org.languagetool.JLanguageTool}) para analizar
+ * el texto completo y detectar palabras con acento incorrecto según su contexto
+ * gramatical. A diferencia del SpellChecker que trabaja palabra por palabra,
+ * esta clase necesita el texto completo para determinar si el acento es correcto.</p>
+ *
+ * <p>Filtra solo los errores de tipo MORFOLOGIK_RULE_ES donde la sugerencia
+ * tiene la misma longitud que la palabra original, indicando un cambio de acento.</p>
+ *
+ * <p>Produce: {@link AccentViolations}</p>
+ *
+ * @see AccentViolations
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 

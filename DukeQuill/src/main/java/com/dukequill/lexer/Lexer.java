@@ -1,4 +1,22 @@
 package com.dukequill.lexer;
+/**
+ * Clase de lógica — analizador léxico del texto en español.
+ *
+ * <p>Divide el texto de entrada en una lista de {@link Token}, clasificando
+ * cada fragmento según su tipo: palabras, signos de puntuación, números,
+ * espacios y saltos de línea.</p>
+ *
+ * <p>Maneja casos especiales del español como puntos suspensivos (...),
+ * signos de apertura (¿, ¡) y caracteres acentuados.</p>
+ *
+ * <p>Produce: {@link Token}</p>
+ * <p>Consumido por: {@link com.dukequill.analyzer.SpellChecker},
+ * {@link com.dukequill.rules.RuleEngine}</p>
+ *
+ * @see Token
+ * @see TokenType
+ */
+
 
 import java.util.*;
 

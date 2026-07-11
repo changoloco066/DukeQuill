@@ -4,11 +4,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.dukequill.analyzer.algorithms.DamerauLevenshtein;
-import com.dukequill.analyzer.algorithms.Levenshtein;
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Token;
 import com.dukequill.lexer.TokenType;
-import com.dukequill.analyzer.algorithms.Levenshtein;;
 
 public class SpellChecker {
     private final Dictionary dictionary;

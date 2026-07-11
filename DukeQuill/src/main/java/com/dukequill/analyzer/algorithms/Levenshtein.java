@@ -1,9 +1,6 @@
 package com.dukequill.analyzer.algorithms;
 
-import java.util.*;
-import com.dukequill.dictionary.Dictionary;
-import com.dukequill.lexer.Token;
-import com.dukequill.lexer.TokenType;
+
 
 public class Levenshtein {
     public int calculate(String a, String b ){

@@ -7,21 +7,19 @@ import java.util.Set;
 import java.util.HashSet;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.spec.ECFieldF2m;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.Loader;
 
-import javax.print.DocFlavor.STRING;
-import javax.print.attribute.standard.JobKOctets;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
+import com.dukequill.Main;
 import com.dukequill.analyzer.AccentChecker;
 import com.dukequill.analyzer.AccentViolations;
 import com.dukequill.analyzer.MorphAnalyzer;
@@ -49,6 +47,7 @@ public class MainWindow extends JFrame {
     private JMenuItem toggleTabsItem;
     private JMenuItem exportMenuItem;
     private JMenuItem openMenuItem;
+    private JMenuItem elegirTemaItem;
 
     // Área de texto principal 
     private JTextPane inputArea;
@@ -74,11 +73,11 @@ public class MainWindow extends JFrame {
     // Layout principal 
     private JSplitPane mainSplitPane;
     private JSplitPane splitPane;
-    private JScrollPane scrollPane;
 
     // Botones del panel inferior 
     private JButton analyzeBtn;
     private JButton exportBtn;
+    private JButton temaBtn;
 
     // Lógica del corrector 
     private Dictionary dictionary;
@@ -87,10 +86,6 @@ public class MainWindow extends JFrame {
     private MorphAnalyzer morphAnalyzer;
     private Lexer lexer;
     private AccentChecker accentChecker;
-
-    // Listas de resultados 
-    private List<Token> tokens;
-    private List<SpellErrors> errors;
 
     // Mapas para tooltips 
     private HashMap<Integer, List<String>> suggestionMap;
@@ -264,6 +259,10 @@ public class MainWindow extends JFrame {
         verMenu.add(toggleTabsItem);
         menuBar.add(verMenu);
 
+        elegirTemaItem = new JMenuItem("Elegir tema...");
+        elegirTemaItem.addActionListener(e -> showThemeSelectorDialog());
+        herramientas.add(elegirTemaItem); 
+
         setJMenuBar(menuBar);
     }
 
@@ -372,9 +371,13 @@ public class MainWindow extends JFrame {
     private void initButtonPanel(){
         analyzeBtn = new JButton("Analizar texto");  
         exportBtn = new JButton("Exportar resultados");
+        temaBtn = new JButton("Elegir tema");
+        temaBtn.addActionListener(e -> showThemeSelectorDialog());
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(analyzeBtn);
         buttonPanel.add(exportBtn);
+        buttonPanel.add(temaBtn);
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
@@ -527,6 +530,55 @@ public class MainWindow extends JFrame {
             }
         });
     }
+
+    private void showThemeSelectorDialog() {
+    String[][] temas = {
+        {"Light", "com.formdev.flatlaf.FlatLightLaf"},
+        {"Dark", "com.formdev.flatlaf.FlatDarkLaf"},
+        {"IntelliJ", "com.formdev.flatlaf.FlatIntelliJLaf"},
+        {"Darcula", "com.formdev.flatlaf.FlatDarculaLaf"},
+        {"Arc", "com.formdev.flatlaf.intellijthemes.FlatArcIJTheme"},
+        {"Solarized Light", "com.formdev.flatlaf.intellijthemes.FlatSolarizedLightIJTheme"},
+        {"Solarized Dark", "com.formdev.flatlaf.intellijthemes.FlatSolarizedDarkIJTheme"},
+        {"Nord", "com.formdev.flatlaf.intellijthemes.FlatNordIJTheme"},
+        {"One Dark", "com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme"},
+        {"Night Owl (Material)", "com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme"},
+        {"Light Owl (Material)", "com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatLightOwlIJTheme"}
+    };
+
+    JList<String> lista = new JList<>();
+    DefaultListModel<String> model = new DefaultListModel<>();
+    for (String[] t : temas) model.addElement(t[0]);
+    lista.setModel(model);
+
+    JScrollPane scroll = new JScrollPane(lista);
+    scroll.setPreferredSize(new Dimension(250, 300)); // <- tamaño fijo, aquí controla el scroll
+
+    JCheckBox marcarDefault = new JCheckBox("Usar como tema por defecto al abrir la app");
+
+    JPanel panel = new JPanel(new BorderLayout(5, 5));
+    panel.add(scroll, BorderLayout.CENTER);
+    panel.add(marcarDefault, BorderLayout.SOUTH);
+
+    int result = JOptionPane.showConfirmDialog(this, panel, "Elegir tema",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+    if (result == JOptionPane.OK_OPTION && lista.getSelectedIndex() != -1) {
+        String claseElegida = temas[lista.getSelectedIndex()][1];
+        try {
+            UIManager.setLookAndFeel(claseElegida);
+            SwingUtilities.updateComponentTreeUI(this);
+            pack();
+
+            if (marcarDefault.isSelected()) {
+                java.util.prefs.Preferences.userNodeForPackage(Main.class)
+                    .put("temaSeleccionado", claseElegida);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}
 
     private int getAbsolutePosition(String text, int line, int column) {
         String[] lines = text.split("\n", -1); // el -1 es para conservar las lineas vacias al final

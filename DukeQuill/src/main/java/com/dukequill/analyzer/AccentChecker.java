@@ -2,7 +2,6 @@ package com.dukequill.analyzer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.checkerframework.checker.units.qual.A;
 import org.languagetool.JLanguageTool;
 import org.languagetool.language.Spanish;
 import org.languagetool.rules.RuleMatch;

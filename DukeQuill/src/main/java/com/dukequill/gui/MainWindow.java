@@ -49,6 +49,10 @@ public class MainWindow extends JFrame {
     private JMenuItem openMenuItem;
     private JMenuItem elegirTemaItem;
 
+    // Componentes de seleccionar tema
+    private JScrollPane scrollPane;
+    private JPanel panel;
+
     // Área de texto principal 
     private JTextPane inputArea;
     private javax.swing.Timer delayTimer;
@@ -533,7 +537,7 @@ public class MainWindow extends JFrame {
 
     private void showThemeSelectorDialog() {
     String[][] temas = {
-        {"Light", "com.formdev.flatlaf.FlatLightLaf"},
+        {"Light (Default)", "com.formdev.flatlaf.FlatLightLaf"},
         {"Dark", "com.formdev.flatlaf.FlatDarkLaf"},
         {"IntelliJ", "com.formdev.flatlaf.FlatIntelliJLaf"},
         {"Darcula", "com.formdev.flatlaf.FlatDarculaLaf"},
@@ -551,13 +555,13 @@ public class MainWindow extends JFrame {
     for (String[] t : temas) model.addElement(t[0]);
     lista.setModel(model);
 
-    JScrollPane scroll = new JScrollPane(lista);
-    scroll.setPreferredSize(new Dimension(250, 300)); // <- tamaño fijo, aquí controla el scroll
+    scrollPane = new JScrollPane(lista);
+    scrollPane.setPreferredSize(new Dimension(250, 300)); // <- tamaño fijo, aquí controla el scroll
 
     JCheckBox marcarDefault = new JCheckBox("Usar como tema por defecto al abrir la app");
 
-    JPanel panel = new JPanel(new BorderLayout(5, 5));
-    panel.add(scroll, BorderLayout.CENTER);
+    panel = new JPanel(new BorderLayout(5, 5));
+    panel.add(scrollPane, BorderLayout.CENTER);
     panel.add(marcarDefault, BorderLayout.SOUTH);
 
     int result = JOptionPane.showConfirmDialog(this, panel, "Elegir tema",

@@ -1,4 +1,15 @@
-/*
+/**
+ * Clase de lógica — gestor del diccionario Hunspell del español.
+ *
+ * <p>Carga el archivo Spanish.dic en memoria usando un {@link java.util.HashSet}
+ * para permitir búsquedas en tiempo O(1). Cada entrada del .dic se procesa
+ * quitando los códigos morfológicos (e.g. "comer/ABC" → "comer").</p>
+ *
+ * <p>Expone las palabras cargadas via {@code getWords()} como un conjunto
+ * no modificable para que {@link com.dukequill.analyzer.SpellChecker}
+ * pueda iterar sobre ellas al generar sugerencias.</p>
+ *
+ * @see com.dukequill.analyzer.SpellChecker
 
 words - variable asignada para la coleccion del diccionario completo
 word - variable asignada para la palabra que recien se acaba de leer 

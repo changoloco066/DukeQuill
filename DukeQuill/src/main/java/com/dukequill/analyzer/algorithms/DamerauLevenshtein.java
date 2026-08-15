@@ -1,4 +1,25 @@
 package com.dukequill.analyzer.algorithms;
+/**
+ * Clase de algoritmo — calcula la distancia de edición entre dos palabras.
+ *
+ * <p>Implementación del algoritmo Damerau-Levenshtein, una extensión del
+ * Levenshtein clásico que agrega la operación de transposición (intercambio
+ * de dos letras adyacentes). Esto mejora la detección de errores tipográficos
+ * comunes como "priemro" → "primero".</p>
+ *
+ * <p>Operaciones soportadas:
+ * <ul>
+ *   <li>Inserción — "cas" → "casa"</li>
+ *   <li>Eliminación — "casaa" → "casa"</li>
+ *   <li>Sustitución — "cesa" → "casa"</li>
+ *   <li>Transposición — "csaa" → "casa"</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Consumido por: {@link com.dukequill.analyzer.SpellChecker}</p>
+ *
+ * @see com.dukequill.analyzer.SpellChecker
+ */
 
 public class DamerauLevenshtein {
      public int calculate(String a, String b ){

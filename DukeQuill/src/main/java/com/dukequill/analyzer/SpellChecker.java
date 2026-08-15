@@ -1,14 +1,36 @@
 package com.dukequill.analyzer;
 
+/**
+ * Clase de lógica — motor principal de corrección ortográfica.
+ *
+ * <p>Verifica cada token de tipo WORD contra el diccionario Hunspell y el
+ * analizador morfológico. Si una palabra no existe en el diccionario ni es
+ * reconocida morfológicamente, se registra como error ortográfico.</p>
+ *
+ * <p>También genera sugerencias de corrección usando el algoritmo
+ * {@link com.dukequill.analyzer.algorithms.DamerauLevenshtein} para encontrar
+ * las palabras más cercanas en el diccionario.</p>
+ *
+ * <p>Depende de:
+ * <ul>
+ *   <li>{@link com.dukequill.dictionary.Dictionary} — para verificar existencia de palabras</li>
+ *   <li>{@link MorphAnalyzer} — para validar conjugaciones y formas derivadas</li>
+ *   <li>{@link com.dukequill.analyzer.algorithms.DamerauLevenshtein} — para sugerencias</li>
+ * </ul>
+ * </p>
+ *
+ * @see Dictionary
+ * @see MorphAnalyzer
+ * @see SpellErrors
+ */
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.dukequill.analyzer.algorithms.DamerauLevenshtein;
-import com.dukequill.analyzer.algorithms.Levenshtein;
 import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Token;
 import com.dukequill.lexer.TokenType;
-import com.dukequill.analyzer.algorithms.Levenshtein;;
 
 public class SpellChecker {
     private final Dictionary dictionary;

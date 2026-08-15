@@ -1,4 +1,4 @@
-<img width="150" height="250" alt="Wave" src="https://github.com/user-attachments/assets/db2d7283-5c2b-4d61-814f-4e1a0398b3f1" />
+<img width="150" height="250" alt="DukeQuill Logo" src="https://github.com/user-attachments/assets/db2d7283-5c2b-4d61-814f-4e1a0398b3f1" />
 
 # DukeQuill 🪶
  
@@ -7,7 +7,17 @@ Un corrector ortográfico y gramatical para el idioma español, desarrollado en 
 El nombre es un homenaje a **Duke**, la mascota oficial de Java, combinado con **Quill** (pluma de escribir) — porque un buen escritor siempre tiene quien lo corrija.
  
 ---
- 
+
+## Ecosistema DukeQuill
+
+| Repositorio | Descripción | Estado |
+|---|---|---|
+| **DukeQuill** (este repo) | Aplicación de escritorio Java/Swing | ✅ Activo |
+| **[dukequill-api](https://github.com/changoloco066/dukequill-api)** | API REST con Spring Boot | ✅ Activo |
+| **[dukequill-web](https://github.com/changoloco066/dukequill-web)** | Frontend web HTML/CSS/JS | 🚧 En desarrollo |
+
+---
+
 ## ¿Qué hace DukeQuill?
  
 DukeQuill recibe un texto en español y lo analiza en varias capas:
@@ -21,7 +31,6 @@ DukeQuill recibe un texto en español y lo analiza en varias capas:
 ---
  
 ## Lo que se ha logrado
- 
 **Motor de análisis**
 - [x] Tokenizador (Lexer) completo para texto en español
 - [x] Corrector ortográfico con soporte de mayúsculas y morfología
@@ -44,13 +53,10 @@ DukeQuill recibe un texto en español y lo analiza en varias capas:
 ---
  
 ## Lo que viene
- 
 - [ ] Exportar resultados a archivo `.txt`
 - [ ] Estadísticas del texto (palabras, oraciones, densidad de errores)
 - [ ] Optimización de búsqueda con BK-Tree
 - [ ] Detección de palabras confusables (`haber/a ver`, `sino/si no`)
-- [ ] API REST con Spring Boot para versión web
-- [ ] Reemplazo de palabras — seleccionar una sugerencia del tooltip para corregir automáticamente la palabra con error
 ---
  
 ## Estructura del proyecto
@@ -111,11 +117,11 @@ Cómo  →  WORD
 estás  →  WORD
 ?  →  CLOSE_PUNCTUATION_SIGN
 ```
- 
+
 **2. SpellChecker + MorphAnalyzer** — cada token de tipo `WORD` se verifica contra el diccionario. Si no existe, se consulta al analizador morfológico para saber si es una forma conjugada válida. Si tampoco lo reconoce, se registra como error y se generan sugerencias usando Damerau-Levenshtein.
- 
+
 **3. RuleEngine + AccentChecker** — aplica reglas de puntuación sobre los tokens y detecta errores de acentuación contextual con LanguageTool.
- 
+
 ---
  
 ## Dependencias
@@ -134,9 +140,9 @@ estás  →  WORD
  
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tuusuario/dukequill.git
-cd dukequill/DukeQuill
- 
+git clone https://github.com/changoloco066/DukeQuill.git
+cd DukeQuill/DukeQuill
+
 # Compilar
 mvn compile
  
@@ -147,17 +153,18 @@ mvn exec:java -Dexec.mainClass="com.dukequill.Main"
 ---
  
 ## Documentación
- 
-La documentación del proyecto está escrita en español. Cada módulo incluye comentarios explicando las decisiones de diseño y el razonamiento detrás de cada implementación.
- 
+
+La documentación del proyecto está escrita en español. Cada módulo incluye comentarios Javadoc explicando las decisiones de diseño y el razonamiento detrás de cada implementación.
+
 ---
- 
+
 ## Créditos y recursos externos
- 
+
 - **[Hunspell Spanish Dictionary](https://github.com/titoBouzout/Dictionaries)** — Diccionario ortográfico del español. Mantenido por titoBouzout.
 - **[LanguageTool](https://languagetool.org/)** — Librería open source para análisis morfológico y gramatical del español.
 - **[Apache PDFBox](https://pdfbox.apache.org/)** — Librería para extracción de texto de archivos PDF.
 - **[Duke](https://wiki.openjdk.org/display/duke/Main)** — Mascota oficial de Java, inspiración del nombre y espíritu del proyecto.
+
 ---
- 
-*Desarrollado con Java 21 *
+
+*Desarrollado con Java 21 ☕*

@@ -1,4 +1,19 @@
 package com.dukequill.rules;
+/**
+ * Clase de regla — detecta errores de concordancia de género.
+ *
+ * <p>Verifica que los artículos concuerden en género con el sustantivo
+ * que les sigue. Por ejemplo detecta "el casa" (masculino + femenino)
+ * o "la perro" (femenino + masculino) como errores.</p>
+ *
+ * <p>Usa {@link com.dukequill.analyzer.MorphAnalyzer} para consultar
+ * el género gramatical de cada sustantivo vía LanguageTool.</p>
+ *
+ * <p>Implementa: {@link Rule}</p>
+ *
+ * @see Rule
+ * @see com.dukequill.analyzer.MorphAnalyzer
+ */
 
 import java.util.List;
 import java.util.Set;

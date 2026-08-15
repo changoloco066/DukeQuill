@@ -1,11 +1,40 @@
 package com.dukequill.gui;
 
+/**
+ * Clase de interfaz gráfica — ventana principal de DukeQuill.
+ *
+ * <p>Coordina todos los componentes visuales y conecta la lógica del corrector
+ * con la interfaz de usuario. Implementa análisis en tiempo real mediante un
+ * {@link javax.swing.Timer} con delay de 500ms para no analizar en cada keystroke.</p>
+ *
+ * <p>Componentes principales:
+ * <ul>
+ *   <li>Área de texto con subrayado ondulado (rojo = ortografía, azul = puntuación/gramática)</li>
+ *   <li>Tooltips con sugerencias de corrección al pasar el mouse</li>
+ *   <li>Panel lateral de palabras ignoradas</li>
+ *   <li>Barra de menú (Archivo, Herramientas, Ver)</li>
+ * </ul>
+ * </p>
+ *
+ * <p>Clases de lógica que orquesta:
+ * {@link com.dukequill.lexer.Lexer},
+ * {@link com.dukequill.analyzer.SpellChecker},
+ * {@link com.dukequill.rules.RuleEngine},
+ * {@link com.dukequill.analyzer.AccentChecker}</p>
+ *
+ * @see SpellChecker
+ * @see RuleEngine
+ * @see AccentChecker
+ */
+
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -13,12 +42,14 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.Loader;
 
-import javax.print.DocFlavor.STRING;
-import javax.print.attribute.standard.JobKOctets;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
+import com.dukequill.Main;
+import com.dukequill.analyzer.AccentChecker;
+import com.dukequill.analyzer.AccentViolations;
 import com.dukequill.analyzer.MorphAnalyzer;
 import com.dukequill.analyzer.SpellChecker;
 import com.dukequill.analyzer.SpellErrors;
@@ -30,6 +61,7 @@ import com.dukequill.dictionary.Dictionary;
 import com.dukequill.lexer.Lexer;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 
 
 public class MainWindow extends JFrame {
@@ -43,6 +75,12 @@ public class MainWindow extends JFrame {
     private JMenuItem toggleTabsItem;
     private JMenuItem exportMenuItem;
     private JMenuItem openMenuItem;
+    private JMenuItem elegirTemaItem;
+
+    // Componentes de seleccionar tema
+    private JScrollPane scrollPane;
+    private JPanel panel;
+
     // Área de texto principal 
     private JTextPane inputArea;
     private javax.swing.Timer delayTimer;
@@ -67,11 +105,11 @@ public class MainWindow extends JFrame {
     // Layout principal 
     private JSplitPane mainSplitPane;
     private JSplitPane splitPane;
-    private JScrollPane scrollPane;
 
     // Botones del panel inferior 
     private JButton analyzeBtn;
     private JButton exportBtn;
+    private JButton temaBtn;
 
     // Lógica del corrector 
     private Dictionary dictionary;
@@ -79,10 +117,7 @@ public class MainWindow extends JFrame {
     private RuleEngine ruleEngine;
     private MorphAnalyzer morphAnalyzer;
     private Lexer lexer;
-
-    // Listas de resultados 
-    private List<Token> tokens;
-    private List<SpellErrors> errors;
+    private AccentChecker accentChecker;
 
     // Mapas para tooltips 
     private HashMap<Integer, List<String>> suggestionMap;
@@ -112,11 +147,11 @@ public class MainWindow extends JFrame {
         List<Token> tokens = lexer.analyze(input);
         List<SpellErrors> errors = checker.check(tokens);        
         List<RuleViolation> violations = ruleEngine.check(tokens);
+        List<AccentViolations> accentErros = accentChecker.check(input);
 
         loadViolations(violations);
         loadErrors(errors);
-        highlightErrors(errors, violations);
-
+        highlightErrors(tokens, errors, violations, accentErros);
     }
 
     private void loadViolations(List<RuleViolation> violations){
@@ -133,7 +168,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void highlightErrors(List<SpellErrors> errors, List<RuleViolation> violations) {
+    private void highlightErrors(List<Token> tokens, List<SpellErrors> errors, List<RuleViolation> violations, List<AccentViolations> accentErrors) {
 
         suggestionMap = new HashMap<Integer, List<String>>();  
         wordLengthMap = new HashMap<Integer, Integer>();
@@ -143,26 +178,10 @@ public class MainWindow extends JFrame {
         javax.swing.text.Highlighter highlighter = inputArea.getHighlighter();
         highlighter.removeAllHighlights();
         
-        String text = inputArea.getText();
-        
-        for(SpellErrors e : errors) {
-            String word = e.getLexeme();
-            int index = text.indexOf(word);
-            if(index >= 0) {
-                try {
-                    List<String> suggestions = checker.getSuggestions(word);
-                    suggestionMap.put(index, suggestions);
-                    wordLengthMap.put(index, word.length());
-                    
-                    highlighter.addHighlight(index, index + word.length(), errorPainter);
-                } catch(Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        
+        //String text = inputArea.getText();
+        String text = inputArea.getText().replace("\r\n", "\n").replace("\r", "\n");
         for(RuleViolation v : violations) {
-            int pos = v.getPosition();
+            int pos = getAbsolutePosition(text, v.getLine(), v.getPosition());
             try {
                 ruleMessageMap.put(pos, v.getMessage());
                 ruleLengthMap.put(pos, v.getLexeme().length());
@@ -171,7 +190,57 @@ public class MainWindow extends JFrame {
                     ex.printStackTrace();
                 }
             }
+
+        Set<Integer> accentHighlighted = new HashSet<>();
+        for(AccentViolations a : accentErrors){
+            int rawPos = a.getFromPos();
+            Token tokenMatch = null;
+
+            for(Token t : tokens){
+                if(t.getType() == com.dukequill.lexer.TokenType.WORD){
+                    int tStart = getAbsolutePosition(text, t.getLine(), t.getPosition());
+                    int tEnd = tStart + t.getLexeme().length();
+                    if(rawPos >= tStart && rawPos < tEnd){
+                        tokenMatch = t;
+                        break;
+                    }
+                }
+            }
+
+            if(tokenMatch != null){
+                int start = getAbsolutePosition(text, tokenMatch.getLine(), tokenMatch.getPosition());
+                if(!accentHighlighted.contains(start)){
+                    accentHighlighted.add(start);
+                    try{
+                        highlighter.addHighlight(start, start + tokenMatch.getLexeme().length(), rulePainter);
+                        ruleMessageMap.put(start, a.getMessage() + " (sugerencia: " + a.getSuggestedReplacements() + ")");
+                        ruleLengthMap.put(start, tokenMatch.getLexeme().length());
+                    }catch (Exception ex){ ex.printStackTrace(); }
+                }
+            }
         }
+
+        for(SpellErrors e : errors) {
+            String word = e.getLexeme();
+            int index = getAbsolutePosition(text, e.getLine(), e.getPosition());    
+            if(index >= 0) {
+                try {
+                    boolean isAccentError = accentErrors.stream()
+                        .anyMatch(a -> a.getOriginalText().equals(word));
+
+                    if(!isAccentError) {
+                        highlighter.addHighlight(index, index + word.length(), errorPainter);
+                    }
+                    List<String> suggestions = checker.getSuggestions(word);
+                    suggestionMap.put(index, suggestions);
+                    wordLengthMap.put(index, word.length());
+
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
 
     private void addWordSorted(String word) {
         if(ignoredListModel.contains(word)){
@@ -193,6 +262,7 @@ public class MainWindow extends JFrame {
         dictionary.loadDictionary();
         checker = new SpellChecker(dictionary, morphAnalyzer);
         ruleEngine = new RuleEngine(morphAnalyzer);
+        accentChecker = new AccentChecker();
     }
 
     private void initMenuBar() {
@@ -220,6 +290,10 @@ public class MainWindow extends JFrame {
         toggleTabsItem = new JMenuItem("Mostrar/ocultar tablas");
         verMenu.add(toggleTabsItem);
         menuBar.add(verMenu);
+
+        elegirTemaItem = new JMenuItem("Elegir tema...");
+        elegirTemaItem.addActionListener(e -> showThemeSelectorDialog());
+        herramientas.add(elegirTemaItem); 
 
         setJMenuBar(menuBar);
     }
@@ -329,9 +403,13 @@ public class MainWindow extends JFrame {
     private void initButtonPanel(){
         analyzeBtn = new JButton("Analizar texto");  
         exportBtn = new JButton("Exportar resultados");
+        temaBtn = new JButton("Elegir tema");
+        temaBtn.addActionListener(e -> showThemeSelectorDialog());
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(analyzeBtn);
         buttonPanel.add(exportBtn);
+        buttonPanel.add(temaBtn);
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
@@ -373,7 +451,6 @@ public class MainWindow extends JFrame {
 
         removeButton.addActionListener(e ->{
             String selected = ignoredList.getSelectedValue();
-            System.out.println("Seleccionado: " + selected);
             if(selected != null){
                 checker.removeIgnoredWord(selected);
                 ignoredListModel.removeElement(selected);
@@ -486,34 +563,96 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private static class WavyUnderlinePainter implements javax.swing.text.Highlighter.HighlightPainter {
+    private void showThemeSelectorDialog() {
+    String[][] temas = {
+        {"Light (Default)", "com.formdev.flatlaf.FlatLightLaf"},
+        {"Dark", "com.formdev.flatlaf.FlatDarkLaf"},
+        {"IntelliJ", "com.formdev.flatlaf.FlatIntelliJLaf"},
+        {"Darcula", "com.formdev.flatlaf.FlatDarculaLaf"},
+        {"Arc", "com.formdev.flatlaf.intellijthemes.FlatArcIJTheme"},
+        {"Solarized Light", "com.formdev.flatlaf.intellijthemes.FlatSolarizedLightIJTheme"},
+        {"Solarized Dark", "com.formdev.flatlaf.intellijthemes.FlatSolarizedDarkIJTheme"},
+        {"Nord", "com.formdev.flatlaf.intellijthemes.FlatNordIJTheme"},
+        {"One Dark", "com.formdev.flatlaf.intellijthemes.FlatOneDarkIJTheme"},
+        {"Night Owl (Material)", "com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatNightOwlIJTheme"},
+        {"Light Owl (Material)", "com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatLightOwlIJTheme"}
+    };
+
+    JList<String> lista = new JList<>();
+    DefaultListModel<String> model = new DefaultListModel<>();
+    for (String[] t : temas) model.addElement(t[0]);
+    lista.setModel(model);
+
+    scrollPane = new JScrollPane(lista);
+    scrollPane.setPreferredSize(new Dimension(250, 300)); // <- tamaño fijo, aquí controla el scroll
+
+    JCheckBox marcarDefault = new JCheckBox("Usar como tema por defecto al abrir la app");
+
+    panel = new JPanel(new BorderLayout(5, 5));
+    panel.add(scrollPane, BorderLayout.CENTER);
+    panel.add(marcarDefault, BorderLayout.SOUTH);
+
+    int result = JOptionPane.showConfirmDialog(this, panel, "Elegir tema",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+    if (result == JOptionPane.OK_OPTION && lista.getSelectedIndex() != -1) {
+        String claseElegida = temas[lista.getSelectedIndex()][1];
+        try {
+            UIManager.setLookAndFeel(claseElegida);
+            SwingUtilities.updateComponentTreeUI(this);
+            pack();
+
+            if (marcarDefault.isSelected()) {
+                java.util.prefs.Preferences.userNodeForPackage(Main.class)
+                    .put("temaSeleccionado", claseElegida);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}
+
+    private int getAbsolutePosition(String text, int line, int column) {
+        String[] lines = text.split("\n", -1); // el -1 es para conservar las lineas vacias al final
+        int absolutePos = 0;
+        for(int i = 0; i < line - 1; i++) {  // ciclo para iterar por todo el error, sumando las longitudes de las lineas previas
+            absolutePos += lines[i].length() + 1; // +1 por el \n
+        }
+    return absolutePos + column; // se le suma la columna del token dentro de su linea para dar con la posicion absoluta
+}
+
+    private static class WavyUnderlinePainter extends javax.swing.text.LayeredHighlighter.LayerPainter {
         private final Color color;
 
-        public WavyUnderlinePainter(Color color) {
-            this.color = color;
-        }
-    
-        @SuppressWarnings("deprecation")
-        @Override
-        public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c) {
-            try {
-                Rectangle r0 = c.modelToView(p0);
-                Rectangle r1 = c.modelToView(p1);
-                g.setColor(color);
-                int y = r0.y + r0.height - 2;
-                int x = r0.x;
-                int endX = r1.x;
-                int amplitude = 2;
-                int wavelength = 4;
-                while (x < endX) {
-                    g.drawLine(x, y, x + wavelength / 2, y - amplitude);
-                    g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
-                    x += wavelength;
-                }
+    public WavyUnderlinePainter(Color color) {
+        this.color = color;
+    }
+
+    // Requerido por la interfaz HighlightPainter, pero no se usa
+    // porque JTextPane usa un LayeredHighlighter que llama a paintLayer().
+    @Override
+    public void paint(Graphics g, int p0, int p1, Shape bounds, JTextComponent c){
+        // sin implementacion ya que paintLayer() es el que pinta
+    }
+    public Shape paintLayer(Graphics g, int p0, int p1, Shape bounds, JTextComponent c, javax.swing.text.View view) {
+        try {
+            Rectangle2D r0 = view.modelToView(p0, javax.swing.text.Position.Bias.Forward, p1, javax.swing.text.Position.Bias.Backward, bounds).getBounds2D();
+            g.setColor(color);
+            int y = (int)(r0.getY() + r0.getHeight()) - 2;
+            int x = (int) r0.getX();
+            int endX = (int)(r0.getX() + r0.getWidth());
+            int amplitude = 2;
+            int wavelength = 4;
+            while (x < endX) {
+                g.drawLine(x, y, x + wavelength / 2, y - amplitude);
+                g.drawLine(x + wavelength / 2, y - amplitude, x + wavelength, y);
+                x += wavelength;
+            }
+            return r0.getBounds();
             } catch (Exception e) {
                 e.printStackTrace();
+                return null;
             }
         }
     }
-  
 }

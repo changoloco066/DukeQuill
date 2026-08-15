@@ -7,4 +7,6 @@ target/
 # archivos compilados
 *.class
 
+.idea
+
 DukeQuill/tiposDeCommits.txt
